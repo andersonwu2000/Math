@@ -66,12 +66,33 @@ theorem map_hom_map_inv_apply
   F[i.hom] (F[i.inv] a) = a :=
   congrFun (F.mapIso i).hom_inv_id a
 
+end Types
+
+namespace NatIso
+variable (F G : C ⥤ Types) (α : F ≅ G)
+
 @[simp, grind =]
-theorem hom_inv_id_app_apply (α : F ≅ G) (X) (x) :
+theorem hom_inv_id_app_apply :
   (α.inv·X) ((α.hom·X) x) = x :=
   congr_fun (α.inv_hom_id_app X) x
 
 @[simp, grind =]
-theorem inv_hom_id_app_apply (α : F ≅ G) (X) (x) :
+theorem inv_hom_id_app_apply :
   α.hom.app X (α.inv.app X x) = x :=
   congr_fun (α.hom_inv_id_app X) x
+
+@[simp]
+theorem eq_symm_apply {x : F[X]} :
+  x = (α.inv·X) y ↔ (α.hom·X) x = y := by grind
+
+@[simp]
+theorem symm_eq_apply {x : F[X]} :
+  x = (α.inv·X) y ↔ y = (α.hom·X) x := by grind
+
+@[simp, grind =]
+theorem hom_Iso_hom :
+  (α.hom·X).Iso.hom x = (α.hom·X) x := rfl
+
+@[simp, grind =]
+theorem inv_Iso_hom :
+  (α.inv·X).Iso.hom x = (α.inv·X) x := rfl

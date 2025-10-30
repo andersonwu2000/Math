@@ -156,20 +156,34 @@ end Units
 
 section UniversalProperty
 
-abbrev UniversalProperty
+abbrev Universal
   (G : D ⥤ C) (X : C.obj) (A : D.obj) :=
   Hom[A, —] ≅ Hom[X, G—]
 
-abbrev coUniversalProperty
+abbrev coUniversal
   (F : C ⥤ D) (A : D.obj) (X : C.obj) :=
   Hom[Fᵒᵖ—, A] ≅ Hom[—, X]
 
-abbrev UniversalProperty.morphism
-  (p : UniversalProperty G X A) : X ⟶ G[A] :=
-  (p.hom·A : Hom[A, A] ⟶ Hom[X, G[A]]) (𝟙 A)
+abbrev Universal.morphism
+  (u : Universal G X A) : X ⟶ G[A] :=
+  (u.hom·A : Hom[A, A] ⟶ Hom[X, G[A]]) (𝟙 A)
 
-abbrev coUniversalProperty.morphism
-  (p : coUniversalProperty F A X) : F[X] ⟶ A :=
+abbrev coUniversal.morphism
+  (u : coUniversal F A X) : F[X] ⟶ A :=
+  (u.inv·X : Hom[X, X] ⟶ Hom[Fᵒᵖ[X], A]) (𝟙 X)
+
+abbrev Universal.property (u : Universal G X A) :
+  ∀ B (f : X ⟶ G[B]), ∃! h : A ⟶ B,
+  f = G[h] ∘ u.morphism := fun B f => by
+    let p := congrFun (u.hom.naturality ((u.inv·B) f)) (𝟙 A)
+    simp at p
+    exact ⟨(u.inv·B) f, p, fun h q => by
+      let p := congrFun (u.hom.naturality h) (𝟙 A)
+      simp [←q, ←NatIso.eq_symm_apply] at p
+      assumption⟩
+
+abbrev coUniversal.property
+  (p : coUniversal F A X) : F[X] ⟶ A :=
   (p.inv·X : Hom[X, X] ⟶ Hom[Fᵒᵖ[X], A]) (𝟙 X)
 
 end UniversalProperty

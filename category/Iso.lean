@@ -175,4 +175,7 @@ theorem hom_inv_id_app (X : C.obj) :
 instance IsIso (X : C.obj) : (α·X).IsIso where
   inv := α.inv·X
 
+instance IsIso_inv (X : C.obj) : (α.inv·X).IsIso where
+  inv := α·X
+
 end NatIso
