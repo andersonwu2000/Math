@@ -25,7 +25,7 @@ theorem ext
 @[simp, grind =]
 theorem naturality
   (α : F ⇒[C, Types] G) (f : X ⟶ Y) (a : F[X]) :
-  (α|Y) (F[f] a) = G[f] ((α|X) a) :=
+  (α·Y) (F[f] a) = G[f] ((α·X) a) :=
   congrFun (α.naturality f) a
 
 @[simp, grind =]
@@ -39,6 +39,16 @@ theorem inv_hom_id_apply
   (y : Y) (i : X ≅[Types] Y) :
   i.hom (i.inv y) = y :=
   congrFun i.hom_inv_id y
+
+@[simp]
+theorem eq_symm_apply
+  (x : X) (y : Y) (i : X ≅[Types] Y) :
+  x = i.inv y ↔ i.hom x = y := by grind
+
+@[simp]
+theorem symm_eq_apply
+  (x : X) (y : Y) (i : X ≅[Types] Y) :
+  i.inv y = x ↔ y = i.hom x := by grind
 
 variable (F G : C ⥤ Types)
 
@@ -56,9 +66,10 @@ theorem map_hom_map_inv_apply
 
 @[simp, grind =]
 theorem hom_inv_id_app_apply (α : F ≅ G) (X) (x) :
-  (α.inv|X) ((α.hom|X) x) = x :=
+  (α.inv·X) ((α.hom·X) x) = x :=
   congr_fun (α.inv_hom_id_app X) x
 
 @[simp, grind =]
-theorem inv_hom_id_app_apply (α : F ≅ G) (X) (x) : α.hom.app X (α.inv.app X x) = x :=
+theorem inv_hom_id_app_apply (α : F ≅ G) (X) (x) :
+  α.hom.app X (α.inv.app X x) = x :=
   congr_fun (α.hom_inv_id_app X) x

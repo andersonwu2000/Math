@@ -10,14 +10,32 @@ def Hom : Cᵒᵖ × C ⥤ Types where
   map f h := f.2 ∘ h ∘ f.1.op
 
 abbrev post_comp (f : X ⟶[C] Y) :
-  Hom[·, X] ⇒ Hom[·, Y] where
+  Hom[—, X] ⇒ Hom[—, Y] where
   app Z h := f ∘ h
 
 abbrev pre_comp (f : Y ⟶[Cᵒᵖ] X) :
-  Hom[Y, ·] ⇒ Hom[X, ·] where
+  Hom[Y, —] ⇒ Hom[X, —] where
   app Z h := h ∘ f.op
 
 abbrev Tansformation.HorizontalFunctor :
   ⟦D, E⟧ × ⟦C, D⟧ ⥤ ⟦C, E⟧ where
   obj X := X.1 ∘[Cat] X.2
   map α := α.1 ◫ α.2
+
+
+abbrev HorizontalComp'
+  (α : F ⇒[C, D] G) (β : H ⇒[D, E] K) :
+  H ∘[Cat] F ⇒ K ∘[Cat] G where
+  app X := K[α·X] ∘ β·(F[X])
+
+namespace Whisker
+
+abbrev Functor_NatTrans
+  (α : F ⇒[C, D] G) (H : D ⥤ E) := 𝟙[⟦D, E⟧] H ◫ α
+
+notation:60 F:61 "◫" α:60 => Functor_NatTrans α F
+
+abbrev NatTrans_Functor
+  (F : C ⥤ D) (β : H ⇒[D, E] K) := β ◫ 𝟙[⟦C, D⟧] F
+
+notation:60 β:61 "◫" F:60 => NatTrans_Functor F β

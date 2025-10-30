@@ -33,11 +33,12 @@ attribute [grind _=_] Category.assoc
 attribute [simp] Category.id_comp Category.comp_id Category.assoc
 
 namespace Category
+variable (C : Category)
 
 abbrev hom.dom (_ : X ⟶[C] Y) := X
 abbrev hom.cod (_ : X ⟶[C] Y) := Y
 
-abbrev op (C : Category) : Category where
+abbrev op : Category where
   obj := C.obj
   hom X Y := C.hom Y X
   id X := 𝟙 X
@@ -47,6 +48,8 @@ notation C "ᵒᵖ" => Category.op C
 
 abbrev hom.op (f : X ⟶[C] Y) :
   Y ⟶[Cᵒᵖ] X := f
+
+abbrev obj.op (X : Cᵒᵖ.obj) : C.obj := X
 
 end Category
 

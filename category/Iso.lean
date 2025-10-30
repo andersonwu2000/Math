@@ -132,7 +132,6 @@ abbrev mapIso (i : X ≅ Y) : F[X] ≅ F[Y] where
   hom := F[i.hom]
   inv := F[i.inv]
 
-
 end Functor
 
 abbrev NatIso (F G : C ⥤ D) := F ≅[⟦C, D⟧] G
@@ -142,38 +141,38 @@ notation F "≅" G => NatIso F G
 namespace NatIso
 
 abbrev ofComponents
-  (α : F ⇒[C, D] G) (eq : ∀ X, (α|X).IsIso) : F ≅ G where
+  (α : F ⇒[C, D] G) (eq : ∀ X, (α·X).IsIso) : F ≅ G where
   hom := α
   inv := {
-    app X := (α|X).Iso.inv,
+    app X := (α·X).Iso.inv,
     naturality {X Y} f := calc
-      _ = (α|Y).Iso.inv ∘ (α|Y ∘ F[f]) ∘ (α|X).Iso.inv :=
+      _ = (α·Y).Iso.inv ∘ (α·Y ∘ F[f]) ∘ (α·X).Iso.inv :=
         by simp
-      _ = ((α|Y).Iso.inv ∘ α|Y) ∘ F[f] ∘ (α|X).Iso.inv :=
+      _ = ((α·Y).Iso.inv ∘ α·Y) ∘ F[f] ∘ (α·X).Iso.inv :=
         by simp only [D.assoc]
-      _ = F[f] ∘ (α|X).Iso.inv :=
+      _ = F[f] ∘ (α·X).Iso.inv :=
         by simp}
 
 variable {F G : C ⥤ D} (α : F ≅ G)
 
-abbrev app (X : C.obj) := (α.hom|X)
-notation α "|" X:101 => app α X
+abbrev app (X : C.obj) := (α.hom·X)
+notation α "·" X:101 => app α X
 
 @[simp, grind =]
 theorem inv_hom_id_app (X : C.obj) :
-  α.inv.app X ∘ α|X = 𝟙 F[X] := by
+  α.inv.app X ∘ α·X = 𝟙 F[X] := by
   let h := α.inv_hom_id
   simp at h
   exact congrFun h X
 
 @[simp, grind =]
 theorem hom_inv_id_app (X : C.obj) :
-  α|X ∘ α.inv.app X = 𝟙 G[X] := by
+  α·X ∘ α.inv.app X = 𝟙 G[X] := by
   let h := α.hom_inv_id
   simp at h
   exact congrFun h X
 
-instance IsIso (X : C.obj) : (α|X).IsIso where
-  inv := α.inv|X
+instance IsIso (X : C.obj) : (α·X).IsIso where
+  inv := α.inv·X
 
 end NatIso
