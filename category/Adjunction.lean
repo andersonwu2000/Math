@@ -84,7 +84,6 @@ theorem Units.left_triangle_hom
     let p := congrArg NatTrans.app u.left_triangle
     let q := congrFun p X
     simp at q
-    rw [←Category.assoc]
     simp [←q]
 
 @[simp]
@@ -94,8 +93,7 @@ theorem Units.right_triangle_hom
     let p := congrArg NatTrans.app u.right_triangle
     let q := congrFun p Y
     simp at q
-    rw [←Category.assoc]
-    simp [←q]
+    simp [←Category.assoc, ←q]
 
 abbrev Units.Adjunction
   (u : Units F G) : F ⊣ G where
