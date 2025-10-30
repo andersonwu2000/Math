@@ -6,7 +6,7 @@ namespace category
 
 @[simp]
 def Adjunction (F : C ⥤ D) (G : D ⥤ C) :=
-  Hom[Fᵒᵖ—, —] ≅[⟦Cᵒᵖ × D, Types⟧] Hom[—, G—]
+  Hom[Fᵒᵖ—, —] ≅ Hom[—, G—]
 
 notation F "⊣[" C "," D "]" G => @Adjunction C D F G
 notation F "⊣" G => Adjunction F G

@@ -12,8 +12,8 @@ namespace yoneda
 
 @[simp, grind =]
 theorem Unit
-  (α : Hom[—, X] ⇒[Cᵒᵖ, Types] F) (f : X ⟶[Cᵒᵖ] A) :
-  F[f] ((α·X) (𝟙[C] X)) = (α·A) f := by
+  (α : Hom[—, X] ⇒[Cᵒᵖ, Types] F) (f : A ⟶ X) :
+  F[f] ((α·X) (𝟙 X)) = (α·A) f := by
   have := (Types.naturality α f) (𝟙 X)
   simp_all
 
@@ -42,13 +42,13 @@ def Lemma :
     (fun (X, F) => (Equiv X.op F).IsIso)
 
 theorem Unit_comp {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ—, G[X]] ⇒[Dᵒᵖ, Types] F) (f : X ⟶[Dᵒᵖ] A) :
-  F[f] ((α·X) (𝟙[C] G[X])) = (α·A) G[f] := by
+  (α : Hom[Gᵒᵖ—, G[X]] ⇒ F) (f : A ⟶ X) :
+  F[f] ((α·X) (𝟙 G[X])) = (α·A) G[f] := by
   have := (Types.naturality α f) (𝟙 G[X])
   simp_all
 
 theorem Unit_comp' {G : D ⥤ C}
-  (α : Hom[—, G—][—, X] ⇒[Cᵒᵖ, Types] F) (f : A ⟶[C] G[X]) :
+  (α : Hom[—, G—][—, X] ⇒ F) (f : A ⟶ G[X]) :
   F[f] ((α·Gᵒᵖ[X]) (𝟙 G[X])) = (α·A) f := by
   have := (Types.naturality α f) (𝟙 G[X])
   simp_all
@@ -64,7 +64,7 @@ namespace coyoneda
 
 @[simp, grind =]
 theorem Unit
-  (α : Hom[X, —] ⇒[C, Types] F) (f : X ⟶[C] A) :
+  (α : Hom[X, —] ⇒[C, Types] F) (f : A ⟶ X) :
   F[f] ((α·X) (𝟙[C] X)) = (α·A) f := by
   have := (Types.naturality α f) (𝟙 X)
   simp_all
@@ -94,13 +94,13 @@ def Lemma :
     (fun (X, F) => (Equiv X F).IsIso)
 
 theorem Unit_comp {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ[X], G—] ⇒[D, Types] F) (f : X ⟶[D] A) :
-  F[f] ((α·X) (𝟙[C] G[X])) = (α·A) G[f] := by
+  (α : Hom[Gᵒᵖ[X], G—] ⇒ F) (f : A ⟶ X) :
+  F[f] ((α·X) (𝟙 G[X])) = (α·A) G[f] := by
   have := (Types.naturality α f) (𝟙 G[X])
   simp_all
 
 theorem Unit_comp' {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ—, —][X, —] ⇒[C, Types] F) (f : G[X] ⟶[C] A) :
+  (α : Hom[Gᵒᵖ—, —][X, —] ⇒ F) (f : G[X] ⟶ A) :
   F[f] ((α·G[X]) (𝟙 G[X])) = (α·A) f := by
   have := (Types.naturality α f) (𝟙 G[X])
   simp_all

@@ -17,15 +17,15 @@ abbrev pre_comp (f : Y ⟶[Cᵒᵖ] X) :
   Hom[Y, —] ⇒ Hom[X, —] where
   app Z h := h ∘ f.op
 
+abbrev Types.Represent_by_Unit (F : C ⥤ Types) :
+  Hom[Unit, F—] ≅ F where
+    hom := {app := fun X a => a Unit.unit}
+    inv := {app := fun X a u => a}
+
 abbrev Tansformation.HorizontalFunctor :
   ⟦D, E⟧ × ⟦C, D⟧ ⥤ ⟦C, E⟧ where
   obj X := X.1 ∘[Cat] X.2
   map α := α.1 ◫ α.2
-
-abbrev Types.Represent_by_Unit (F : C ⥤ Types) :
-  Hom[Unit, F—] ≅[⟦C, Types⟧] F where
-    hom := {app := fun X a => a Unit.unit}
-    inv := {app := fun X a u => a}
 
 namespace Whisker
 
