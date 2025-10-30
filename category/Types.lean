@@ -12,6 +12,8 @@ abbrev Types : Category where
   id X := id
   comp f g := f ∘ g
 
+abbrev Unit : Types.obj := PUnit
+
 attribute [simp] Function.comp_def
 
 namespace Types

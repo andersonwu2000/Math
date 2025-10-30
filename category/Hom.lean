@@ -22,6 +22,10 @@ abbrev Tansformation.HorizontalFunctor :
   obj X := X.1 ∘[Cat] X.2
   map α := α.1 ◫ α.2
 
+abbrev Types.Represent_by_Unit (F : C ⥤ Types) :
+  Hom[Unit, F—] ≅[⟦C, Types⟧] F where
+    hom := {app := fun X a => a Unit.unit}
+    inv := {app := fun X a u => a}
 
 namespace Whisker
 
