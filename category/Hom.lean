@@ -23,11 +23,6 @@ abbrev Tansformation.HorizontalFunctor :
   map α := α.1 ◫ α.2
 
 
-abbrev HorizontalComp'
-  (α : F ⇒[C, D] G) (β : H ⇒[D, E] K) :
-  H ∘[Cat] F ⇒ K ∘[Cat] G where
-  app X := K[α·X] ∘ β·(F[X])
-
 namespace Whisker
 
 abbrev Functor_NatTrans

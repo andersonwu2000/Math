@@ -34,7 +34,7 @@ import Mathlib.Logic.Function.Basic
 --   Module F V :=
 --   Module.compHom (R := F) V s.conj
 -- notation V "*" => dual V 𝒫
-
+def sdf := ZFSet ⊕ ZFSet
 
 #print axioms ZFSet.sUnion
 #print axioms Cardinal.cantor
