@@ -6,7 +6,7 @@ namespace category
 @[simp]
 def yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧ where
   obj X := Hom[—, X]
-  map f := {app _ h := f ∘ h}
+  map f := post_comp f
 
 namespace yoneda
 
@@ -41,24 +41,18 @@ def Lemma :
       simpa}
     (fun (X, F) => (Equiv X.op F).IsIso)
 
-theorem Unit_comp {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ—, G[X]] ⇒ F) (f : A ⟶ X) :
-  F[f] ((α·X) (𝟙 G[X])) = (α·A) G[f] := by
-  have := (Types.naturality α f) (𝟙 G[X])
-  simp_all
-
-theorem Unit_comp' {G : D ⥤ C}
-  (α : Hom[—, G—][—, X] ⇒ F) (f : A ⟶ G[X]) :
-  F[f] ((α·Gᵒᵖ[X]) (𝟙 G[X])) = (α·A) f := by
-  have := (Types.naturality α f) (𝟙 G[X])
-  simp_all
+-- theorem FullyFaithful :
+--   yoneda.FullyFaithful (D := ⟦Cᵒᵖ, Types⟧) := by
+--     intro X Y
+--     let sdf := yoneda.map
+--     sorry
 
 end yoneda
 
 @[simp]
 def coyoneda : Cᵒᵖ ⥤ ⟦C, Types⟧ where
   obj X := Hom[X, —]
-  map f := {app _ h := h ∘ f}
+  map f := pre_comp f
 
 namespace coyoneda
 
@@ -93,16 +87,5 @@ def Lemma :
       simpa}
     (fun (X, F) => (Equiv X F).IsIso)
 
-theorem Unit_comp {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ[X], G—] ⇒ F) (f : A ⟶ X) :
-  F[f] ((α·X) (𝟙 G[X])) = (α·A) G[f] := by
-  have := (Types.naturality α f) (𝟙 G[X])
-  simp_all
-
-theorem Unit_comp' {G : D ⥤ C}
-  (α : Hom[Gᵒᵖ—, —][X, —] ⇒ F) (f : G[X] ⟶ A) :
-  F[f] ((α·G[X]) (𝟙 G[X])) = (α·A) f := by
-  have := (Types.naturality α f) (𝟙 G[X])
-  simp_all
 
 end coyoneda

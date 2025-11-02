@@ -20,13 +20,14 @@ attribute [grind _=_] Functor.map_comp
 
 namespace Functor
 
-structure Full (F : C ⥤ D) where
-  map_surjective {X Y} : Function.Surjective (@F.map X Y)
+def Full (F : C ⥤ D) :=
+  ∀ X Y, Function.Surjective (@F.map X Y)
 
-structure Faithful (F : C ⥤ D) where
-  map_injective {X Y} : Function.Injective (@F.map X Y)
+def Faithful (F : C ⥤ D) :=
+  ∀ X Y, Function.Injective (@F.map X Y)
 
-attribute [simp] Functor.Full.map_surjective Functor.Faithful.map_injective
+def FullyFaithful (F : C ⥤ D) :=
+  ∀ X Y, Function.Bijective (@F.map X Y)
 
 abbrev op (F : C ⥤ D) : Cᵒᵖ ⥤ Dᵒᵖ where
   obj := F.obj

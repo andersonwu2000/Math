@@ -32,7 +32,7 @@ theorem HomEquiv.naturality_right_symm
 theorem HomEquiv.naturality_left_symm
   (φ : HomEquiv F G) (f : Y ⟶ X) (g : X ⟶ G[A]) :
   (φ.equiv Y A).inv (g ∘ f) = Fᵒᵖ[f] ∘ (φ.equiv X A).inv g := by
-  rw [Types.symm_eq_apply]
+  rw [Iso.symm_eq_apply]
   grind
 
 abbrev HomEquiv.hom
@@ -155,13 +155,12 @@ abbrev Adjunction.Units : Units F G where
 end Units
 
 section UniversalProperty
+variable (G : D ⥤ C) (F : C ⥤ D)
 
-abbrev Universal
-  (G : D ⥤ C) (X : C.obj) (A : D.obj) :=
+abbrev Universal (X : C.obj) (A : D.obj) :=
   Hom[A, —] ≅ Hom[X, G—]
 
-abbrev coUniversal
-  (F : C ⥤ D) (A : D.obj) (X : C.obj) :=
+abbrev coUniversal (A : D.obj) (X : C.obj) :=
   Hom[Fᵒᵖ—, A] ≅ Hom[—, X]
 
 abbrev Universal.morphism
@@ -182,8 +181,19 @@ abbrev Universal.property (u : Universal G X A) :
       simp [←q, ←NatIso.eq_symm_apply] at p
       assumption⟩
 
-abbrev coUniversal.property
-  (p : coUniversal F A X) : F[X] ⟶ A :=
-  (p.inv·X : Hom[X, X] ⟶ Hom[Fᵒᵖ[X], A]) (𝟙 X)
+abbrev coUniversal.property (u : coUniversal F A X) :
+  ∀ Y (f : F[Y] ⟶ A), ∃! h : Y ⟶ X,
+  f = u.morphism ∘ F[h] := fun B f => by
+    let p := congrFun (u.inv.naturality ((u.hom·B) f)) (𝟙 X)
+    simp at p
+    exact ⟨(u.hom·B) f, p, fun h q => by
+      let p := congrFun (u.inv.naturality h) (𝟙 X)
+      simp [←q] at p
+      exact (u.eq_symm_apply.mp p.symm).symm⟩
+
+-- abbrev Universal.left_adjoint (f : C.obj → D.obj)
+--   (p : Universal G X (f X)) : C ⥤ D where
+--   obj := f
+--   map f := sorry
 
 end UniversalProperty

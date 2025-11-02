@@ -16,19 +16,19 @@ abbrev Unit : Types.obj := PUnit
 
 attribute [simp] Function.comp_def
 
-namespace Types
-
 @[ext]
-theorem ext
+theorem Types.ext
   (f g : X ⟶[Types] Y) (h : ∀x:X, f x = g x) : f = g := by
   funext x
   exact h x
 
 @[simp, grind =]
-theorem naturality
+theorem Types.naturality
   (α : F ⇒[C, Types] G) (f : X ⟶ Y) (a : F[X]) :
   (α·Y) (F[f] a) = G[f] ((α·X) a) :=
   congrFun (α.naturality f) a
+
+namespace Iso
 
 @[simp, grind =]
 theorem hom_inv_id_apply
@@ -52,6 +52,18 @@ theorem symm_eq_apply
   (x : X) (y : Y) (i : X ≅[Types] Y) :
   i.inv y = x ↔ y = i.hom x := by grind
 
+theorem injective (i : X ≅[Types] Y) : i.hom.Injective := by
+  intro _ _ p
+  let q := congrArg i.inv p
+  simp at q
+  assumption
+
+theorem surjective (i : X ≅[Types] Y) : i.hom.Surjective :=
+  fun y => ⟨i.inv y, by simp⟩
+
+theorem bijective (i : X ≅[Types] Y) : i.hom.Bijective :=
+  ⟨i.injective, i.surjective⟩
+
 variable (F G : C ⥤ Types)
 
 @[simp, grind =]
@@ -66,7 +78,7 @@ theorem map_hom_map_inv_apply
   F[i.hom] (F[i.inv] a) = a :=
   congrFun (F.mapIso i).hom_inv_id a
 
-end Types
+end Iso
 
 namespace NatIso
 variable (F G : C ⥤ Types) (α : F ≅ G)
