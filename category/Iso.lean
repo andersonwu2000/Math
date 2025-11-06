@@ -1,4 +1,5 @@
-import MATH.category.ProductCat
+import MATH.category.EpiMono
+import MATH.category.NatTrans
 
 /-
 Notation
@@ -112,6 +113,26 @@ end Category.hom
 
 instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
   inv := i.inv
+
+instance SplitMono_Epi_IsIso (f : X ⟶ Y)
+  [f.IsSplitMono] [f.IsEpi] : f.IsIso where
+  inv := f.SplitMono.left_inv
+  id_left := f.SplitMono.id_left
+  id_right := by
+    have p : f ∘ 𝟙 X = 𝟙 Y ∘ f := by simp
+    rw [←f.SplitMono.id_left, ←Category.assoc] at p
+    apply f.Epi.left_uni at p
+    simp_all [f.SplitMono_hom_eq]
+
+instance SplitEpi_Mono_IsIso (f : X ⟶ Y)
+  [f.IsSplitEpi] [f.IsMono] : f.IsIso where
+  inv := f.SplitEpi.right_inv
+  id_right := f.SplitEpi.id_right
+  id_left := by
+    have p : 𝟙 Y ∘ f = f ∘ 𝟙 X := by simp
+    rw [←f.SplitEpi.id_right, Category.assoc] at p
+    apply f.Mono.right_uni at p
+    simp_all [f.SplitEpi_hom_eq]
 
 namespace Functor
 variable (F : C ⥤ D)

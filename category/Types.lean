@@ -58,13 +58,24 @@ theorem injective (i : X ≅[Types] Y) : i.hom.Injective := by
   simp at q
   assumption
 
-theorem surjective (i : X ≅[Types] Y) : i.hom.Surjective :=
-  fun y => ⟨i.inv y, by simp⟩
+-- theorem Iso_injective
+--   (f : X ⟶[Types] Y) [f.IsIso] : f.Injective := by
+--   intro _ _ p
+--   let q := congrArg f.inv p
+--   simp at q
+--   assumption
 
-theorem bijective (i : X ≅[Types] Y) : i.hom.Bijective :=
-  ⟨i.injective, i.surjective⟩
+-- theorem surjective (i : X ≅[Types] Y) : i.hom.Surjective :=
+--   fun y => ⟨i.inv y, by simp⟩
 
+-- theorem bijective (i : X ≅[Types] Y) : i.hom.Bijective :=
+--   ⟨i.injective, i.surjective⟩
+
+
+end Iso
+namespace Functor
 variable (F G : C ⥤ Types)
+
 
 @[simp, grind =]
 theorem map_inv_map_hom_apply
@@ -78,7 +89,7 @@ theorem map_hom_map_inv_apply
   F[i.hom] (F[i.inv] a) = a :=
   congrFun (F.mapIso i).hom_inv_id a
 
-end Iso
+end Functor
 
 namespace NatIso
 variable (F G : C ⥤ Types) (α : F ≅ G)

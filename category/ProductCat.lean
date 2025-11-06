@@ -1,4 +1,4 @@
-import MATH.category.NatTrans
+import MATH.category.Iso
 
 namespace category
 

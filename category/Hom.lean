@@ -1,4 +1,5 @@
 import MATH.category.Types
+import MATH.category.ProductCat
 
 namespace category
 -- set_option trace.Meta.synthInstance true
