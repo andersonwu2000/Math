@@ -5,7 +5,7 @@ import MATH.category.Basic
   op comp cancel
 `Category.hom`
   IsMono IsEpi
-  Mono Epi : Is... to ...
+  Mono Epi : IsMono/Epi → Mono/Epi
   hom_eq
   right_uni left_uni
 
@@ -17,8 +17,6 @@ import MATH.category.Basic
   SplitMono SplitEpi : Is... to ...
   hom_eq
   id_left id_right
-  SplitMono_Epi_IsIso
-  SplitEpi_Mono_IsIso
 -/
 
 -- set_option trace.Meta.synthInstance true

@@ -104,15 +104,29 @@ lemma Iso.hom_inv_id [f.IsIso] :
   exact f.Iso.hom_inv_id
 
 @[simp, grind =]
-theorem hom_inv_id_assoc
-  (f : X ⟶ Y) [IsIso f] (g : Z ⟶ X) :
+theorem Iso.hom_inv_id_assoc
+  [f.IsIso] (g : Z ⟶ X) :
   f.Iso.inv ∘ f ∘ g = g :=
   by simp [←Category.assoc]
+
+instance Iso.IsSplitMono [f.IsIso] : f.IsSplitMono where
+  left_inv := f.inv
+  id_left := f.Iso.inv_hom_id
+
+instance Iso.IsSplitEpi [f.IsIso] : f.IsSplitEpi where
+  right_inv := f.inv
+  id_right := f.Iso.hom_inv_id
+
+-- instance Iso.IsMono [f.IsIso] : f.IsMono :=
+--   f.IsSplitMono.Mono
 
 end Category.hom
 
 instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
   inv := i.inv
+
+instance Iso.inv_IsIso (i : X ≅ Y) : i.inv.IsIso where
+  inv := i.hom
 
 instance SplitMono_Epi_IsIso (f : X ⟶ Y)
   [f.IsSplitMono] [f.IsEpi] : f.IsIso where
@@ -196,7 +210,7 @@ theorem hom_inv_id_app (X : C.obj) :
 instance IsIso (X : C.obj) : (α·X).IsIso where
   inv := α.inv·X
 
-instance IsIso_inv (X : C.obj) : (α.inv·X).IsIso where
+instance inv_IsIso (X : C.obj) : (α.inv·X).IsIso where
   inv := α·X
 
 end NatIso

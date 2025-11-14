@@ -20,14 +20,9 @@ attribute [grind _=_] Functor.map_comp
 
 namespace Functor
 
-def Full (F : C ⥤ D) :=
-  ∀ X Y, Function.Surjective (@F.map X Y)
-
-def Faithful (F : C ⥤ D) :=
-  ∀ X Y, Function.Injective (@F.map X Y)
-
-def FullyFaithful (F : C ⥤ D) :=
-  ∀ X Y, Function.Bijective (@F.map X Y)
+abbrev Const (X : C.obj) : J ⥤ C where
+  obj j := X
+  map f := 𝟙 X
 
 abbrev op (F : C ⥤ D) : Cᵒᵖ ⥤ Dᵒᵖ where
   obj := F.obj

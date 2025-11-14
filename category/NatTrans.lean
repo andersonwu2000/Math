@@ -50,8 +50,8 @@ abbrev FunctorCat (C D : Category) : Category where
 
 notation "⟦" C "," D "⟧" => FunctorCat C D
 
-abbrev Functor.const : C ⥤ ⟦J, C⟧ where
-  obj X := {
-    obj := fun j => X,
-    map := fun f => 𝟙 X }
+abbrev Functor.Diagonal : C ⥤ ⟦J, C⟧ where
+  obj X := Const X
   map f := {app := fun j => f}
+
+notation "Δ" => Functor.Diagonal

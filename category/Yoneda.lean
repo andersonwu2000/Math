@@ -30,16 +30,21 @@ abbrev Evaluation : Cᵒᵖ × ⟦Cᵒᵖ, Types⟧ ⥤ Types where
 
 @[simp]
 def Lemma :
-  Hom[yonedaᵒᵖ—, —] ≅[⟦Cᵒᵖ × ⟦Cᵒᵖ, Types⟧, Types⟧] Evaluation :=
-  NatIso.ofComponents {
-    app := fun (X, F) => (Equiv X.op F).hom,
-    naturality := by
-      intro (X, F) (Y, G) (f, γ)
+  Hom[yonedaᵒᵖ—, —] ≅[⟦Cᵒᵖ × ⟦Cᵒᵖ, Types⟧, Types⟧] Evaluation := by
+  apply NatIso.ofComponents
+  case α : Hom[yonedaᵒᵖ—,—] ⇒ Evaluation
+  . constructor
+    case app
+    . intro ((X, F) : (Cᵒᵖ × ⟦Cᵒᵖ, Types⟧).obj)
+      exact (Equiv X.op F).hom
+    case naturality
+    . intro (X, F) (Y, G) (f, γ)
       ext α
       let h := Types.naturality γ f ((α·X) (𝟙 X))
       simp at h
-      simpa}
-    (fun (X, F) => (Equiv X.op F).IsIso)
+      simpa
+  case eq
+  . exact (fun (X, F) => (Equiv X.op F).IsIso)
 
 -- theorem FullyFaithful :
 --   yoneda.FullyFaithful (D := ⟦Cᵒᵖ, Types⟧) := by
