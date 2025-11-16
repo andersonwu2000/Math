@@ -1,5 +1,5 @@
-import MATH.category.Types
-import MATH.category.ProductCat
+import MATH.Category.Basic.Types
+import MATH.Category.Basic.ProductCat
 
 namespace category
 -- set_option trace.Meta.synthInstance true

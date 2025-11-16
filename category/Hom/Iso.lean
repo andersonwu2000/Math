@@ -1,5 +1,5 @@
-import MATH.category.EpiMono
-import MATH.category.NatTrans
+import MATH.Category.Basic.NatTrans
+import MATH.Category.Hom.EpiMono
 
 /-
 Notation
@@ -22,8 +22,8 @@ Notation
       app
       IsIso : components are Iso
 -/
--- set_option trace.Meta.synthInstance true
--- set_option profiler true
+set_option trace.Meta.synthInstance true
+set_option profiler true
 
 namespace category
 
@@ -76,51 +76,97 @@ variable (f : X ⟶ Y)
 
 class IsIso  where
   inv : Y ⟶ X
-  id_left : inv ∘ f = 𝟙 X := by
+  inv_hom_id : inv ∘ f = 𝟙 X := by
     first | grind | simp
-  id_right : f ∘ inv = 𝟙 Y := by
+  hom_inv_id : f ∘ inv = 𝟙 Y := by
     first | grind | simp
 
-abbrev inv [p : f.IsIso] : Y ⟶ X := p.inv
+abbrev inv [f.IsIso] : Y ⟶ X := IsIso.inv f
 
-def Iso [p : f.IsIso] : X ≅ Y where
+def asIso [p : f.IsIso] : X ≅ Y where
   hom := f
-  inv := f.inv
-  inv_hom_id := p.id_left
-  hom_inv_id := p.id_right
-
-lemma Iso_hom_eq [f.IsIso] : f = f.Iso.hom := rfl
-
-@[simp, grind =]
-lemma Iso.inv_hom_id [f.IsIso] :
-  f.Iso.inv ∘ f = 𝟙 X := by
-  conv in f => rw [f.Iso_hom_eq]
-  exact f.Iso.inv_hom_id
-
-@[simp, grind =]
-lemma Iso.hom_inv_id [f.IsIso] :
-  f ∘ f.Iso.inv = 𝟙 Y := by
-  conv in f => rw [f.Iso_hom_eq]
-  exact f.Iso.hom_inv_id
-
-@[simp, grind =]
-theorem Iso.hom_inv_id_assoc
-  [f.IsIso] (g : Z ⟶ X) :
-  f.Iso.inv ∘ f ∘ g = g :=
-  by simp [←Category.assoc]
-
-instance Iso.IsSplitMono [f.IsIso] : f.IsSplitMono where
-  left_inv := f.inv
-  id_left := f.Iso.inv_hom_id
-
-instance Iso.IsSplitEpi [f.IsIso] : f.IsSplitEpi where
-  right_inv := f.inv
-  id_right := f.Iso.hom_inv_id
-
--- instance Iso.IsMono [f.IsIso] : f.IsMono :=
---   f.IsSplitMono.Mono
+  inv := p.inv
+  inv_hom_id := p.inv_hom_id
+  hom_inv_id := p.hom_inv_id
 
 end Category.hom
+namespace IsIso
+variable (f : X ⟶ Y) (g : Y ⟶ Z)
+
+@[simp, grind =]
+lemma hom_eq [f.IsIso] :
+  f.asIso.hom = f := rfl
+
+@[simp, grind =]
+lemma inv_eq [f.IsIso] :
+  f.asIso.inv = f.inv := rfl
+
+@[simp, grind =]
+lemma inv_hom_id' [f.IsIso] : f.inv ∘ f = 𝟙 X := by
+  rw [←inv_eq]
+  exact f.asIso.inv_hom_id
+
+@[simp, grind =]
+lemma hom_inv_id' [f.IsIso] : f ∘ f.inv = 𝟙 Y := by
+  rw [←inv_eq]
+  exact f.asIso.hom_inv_id
+
+@[simp, grind =]
+theorem hom_inv_id_assoc
+  [f.IsIso] : f.inv ∘ f ∘ h = h :=
+  by simp [←Category.assoc]
+
+instance id : (𝟙 X).IsIso where
+  inv := 𝟙 X
+
+instance inv_isIso [f.IsIso] : f.inv.IsIso where
+  inv := f
+
+instance comp_isIso [f.IsIso] [g.IsIso] : (g ∘ f).IsIso where
+  inv := f.inv ∘ g.inv
+
+@[simp, grind =]
+theorem inv_id : (𝟙 X).inv = 𝟙 X := rfl
+
+@[simp, grind =]
+theorem inv_comp [f.IsIso] [g.IsIso] :
+  (g ∘ f).inv = f.inv ∘ g.inv := rfl
+
+instance IsSplitMono [f.IsIso] : f.IsSplitMono where
+  left_inv := f.inv
+  inv_hom_id := f.asIso.inv_hom_id
+
+instance IsSplitEpi [f.IsIso] : f.IsSplitEpi where
+  right_inv := f.inv
+  hom_inv_id := f.asIso.hom_inv_id
+
+instance IsMono [f.IsIso] : f.IsMono :=
+  IsSplitMono.IsMono f
+
+instance IsEpi [f.IsIso] : f.IsEpi :=
+  IsSplitEpi.IsEpi f
+
+end IsIso
+
+instance SplitMono_Epi_IsIso (f : X ⟶ Y)
+  [f.IsSplitMono] [f.IsEpi] : f.IsIso where
+  inv := f.left_inv
+  inv_hom_id := f.asSplitMono.inv_hom_id
+  hom_inv_id := by
+    have p : f ∘ 𝟙 X = 𝟙 Y ∘ f := by simp
+    rw [←f.asSplitMono.inv_hom_id, ←Category.assoc] at p
+    apply f.asEpi.left_uni at p
+    simp_all
+
+instance SplitEpi_Mono_IsIso (f : X ⟶ Y)
+  [f.IsSplitEpi] [f.IsMono] : f.IsIso where
+  inv := f.right_inv
+  hom_inv_id := f.asSplitEpi.hom_inv_id
+  inv_hom_id := by
+    have p : 𝟙 Y ∘ f = f ∘ 𝟙 X := by simp
+    rw [←f.asSplitEpi.hom_inv_id, Category.assoc] at p
+    apply f.asMono.right_uni at p
+    simp_all
 
 instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
   inv := i.inv
@@ -128,32 +174,12 @@ instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
 instance Iso.inv_IsIso (i : X ≅ Y) : i.inv.IsIso where
   inv := i.hom
 
-instance SplitMono_Epi_IsIso (f : X ⟶ Y)
-  [f.IsSplitMono] [f.IsEpi] : f.IsIso where
-  inv := f.SplitMono.left_inv
-  id_left := f.SplitMono.id_left
-  id_right := by
-    have p : f ∘ 𝟙 X = 𝟙 Y ∘ f := by simp
-    rw [←f.SplitMono.id_left, ←Category.assoc] at p
-    apply f.Epi.left_uni at p
-    simp_all [f.SplitMono_hom_eq]
-
-instance SplitEpi_Mono_IsIso (f : X ⟶ Y)
-  [f.IsSplitEpi] [f.IsMono] : f.IsIso where
-  inv := f.SplitEpi.right_inv
-  id_right := f.SplitEpi.id_right
-  id_left := by
-    have p : 𝟙 Y ∘ f = f ∘ 𝟙 X := by simp
-    rw [←f.SplitEpi.id_right, Category.assoc] at p
-    apply f.Mono.right_uni at p
-    simp_all [f.SplitEpi_hom_eq]
 
 namespace Functor
-variable (F : C ⥤ D)
+variable (f : X ⟶[C] Y) (F : C ⥤ D)
 
-lemma map_iso_eq
-  (f : X ⟶ Y) [f.IsIso] :
-  F[f] = F[f.Iso.hom] := rfl
+lemma map_iso_eq [f.IsIso] :
+  F[f] = F[f.asIso.hom] := rfl
 
 @[simp, grind =]
 lemma map_hom_inv_id (i : X ≅ Y) :
@@ -163,9 +189,24 @@ lemma map_hom_inv_id (i : X ≅ Y) :
 lemma map_inv_hom_id (i : X ≅ Y) :
   F[i.inv] ∘ F[i.hom] = 𝟙 F[X] := by grind
 
-abbrev mapIso (i : X ≅ Y) : F[X] ≅ F[Y] where
+def mapIso (i : X ≅ Y) : F[X] ≅ F[Y] where
   hom := F[i.hom]
   inv := F[i.inv]
+
+@[simp, grind =]
+lemma mapIso_hom (i : X ≅ Y) :
+  (F.mapIso i).hom = F.map i.hom := rfl
+
+@[simp, grind =]
+lemma mapIso_inv (i : X ≅ Y) :
+  (F.mapIso i).inv = F.map i.inv := rfl
+
+instance mapIsIso [f.IsIso] : F[f].IsIso where
+  inv := F[f.inv]
+
+@[simp, grind =]
+theorem map_inv [f.IsIso] :
+  F[f.inv] = F[f].inv := rfl
 
 end Functor
 
@@ -179,13 +220,13 @@ abbrev ofComponents
   (α : F ⇒[C, D] G) (eq : ∀ X, (α·X).IsIso) : F ≅ G where
   hom := α
   inv := {
-    app X := (α·X).Iso.inv,
+    app X := (α·X).asIso.inv,
     naturality {X Y} f := calc
-      _ = (α·Y).Iso.inv ∘ (α·Y ∘ F[f]) ∘ (α·X).Iso.inv :=
+      _ = (α·Y).inv ∘ (α·Y ∘ F[f]) ∘ (α·X).inv :=
         by simp
-      _ = ((α·Y).Iso.inv ∘ α·Y) ∘ F[f] ∘ (α·X).Iso.inv :=
+      _ = ((α·Y).inv ∘ α·Y) ∘ F[f] ∘ (α·X).inv :=
         by simp only [D.assoc]
-      _ = F[f] ∘ (α·X).Iso.inv :=
+      _ = F[f] ∘ (α·X).inv :=
         by simp}
 
 variable {F G : C ⥤ D} (α : F ≅ G)

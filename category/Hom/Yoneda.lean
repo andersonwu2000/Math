@@ -1,4 +1,4 @@
-import MATH.category.Hom
+import MATH.Category.Hom.Basic
 
 namespace category
 

@@ -1,4 +1,4 @@
-import MATH.category.Iso
+import MATH.Category.Hom.Iso
 
 namespace category
 

@@ -1,4 +1,4 @@
-import MATH.category.Functor
+import MATH.Category.Basic.Functor
 
 namespace category
 

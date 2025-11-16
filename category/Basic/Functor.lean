@@ -1,4 +1,4 @@
-import MATH.category.Basic
+import MATH.Category.Basic.Category
 
 namespace category
 
