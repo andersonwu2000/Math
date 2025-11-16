@@ -16,7 +16,6 @@ notation:max F "[" X "]" => Functor.obj F X
 notation:max F "[" f "]" => Functor.map F f
 attribute [simp] Functor.map_id Functor.map_comp
 attribute [grind =] Functor.map_id
-attribute [grind _=_] Functor.map_comp
 
 namespace Functor
 

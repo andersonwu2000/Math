@@ -22,8 +22,8 @@ Notation
       app
       IsIso : components are Iso
 -/
-set_option trace.Meta.synthInstance true
-set_option profiler true
+-- set_option trace.Meta.synthInstance true
+-- set_option profiler true
 
 namespace category
 

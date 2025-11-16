@@ -14,7 +14,7 @@ notation:30 F "⇒[" C "," D "]" G => @NatTrans C D F G
 notation:30 F "⇒" G => NatTrans F G
 notation α "·" X:101 => app α X
 attribute [simp] naturality
-attribute [grind _=_] naturality
+attribute [grind =] naturality
 
 @[simp, grind =]
 theorem func_naturality
