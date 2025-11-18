@@ -22,14 +22,15 @@ Notation
       app
       IsIso : components are Iso
 -/
--- set_option trace.Meta.synthInstance true
--- set_option profiler true
+set_option trace.Meta.synthInstance true
+set_option profiler true
 
 namespace category
+variable {C : Category}
 
-structure Iso {C} (X Y) where
-  hom : X ⟶[C] Y
-  inv : Y ⟶[C] X
+structure Iso (X Y : C.obj) where
+  hom : X ⟶ Y
+  inv : Y ⟶ X
   inv_hom_id : inv ∘ hom = 𝟙 X := by
     first | grind | simp; rfl | simp
   hom_inv_id : hom ∘ inv = 𝟙 Y := by
@@ -72,7 +73,7 @@ abbrev trans
 
 end Iso
 namespace Category.hom
-variable (f : X ⟶ Y)
+variable {C : Category} {X Y : C.obj} (f : X ⟶ Y)
 
 class IsIso  where
   inv : Y ⟶ X
@@ -81,132 +82,112 @@ class IsIso  where
   hom_inv_id : f ∘ inv = 𝟙 Y := by
     first | grind | simp
 
+attribute [simp, grind =] IsIso.hom_inv_id IsIso.inv_hom_id
 abbrev inv [f.IsIso] : Y ⟶ X := IsIso.inv f
-
-def asIso [p : f.IsIso] : X ≅ Y where
-  hom := f
-  inv := p.inv
-  inv_hom_id := p.inv_hom_id
-  hom_inv_id := p.hom_inv_id
+notation:max f:max "⁻¹" => inv f
 
 end Category.hom
 namespace IsIso
 variable (f : X ⟶ Y) (g : Y ⟶ Z)
 
-@[simp, grind =]
-lemma hom_eq [f.IsIso] :
-  f.asIso.hom = f := rfl
-
-@[simp, grind =]
-lemma inv_eq [f.IsIso] :
-  f.asIso.inv = f.inv := rfl
-
-@[simp, grind =]
-lemma inv_hom_id' [f.IsIso] : f.inv ∘ f = 𝟙 X := by
-  rw [←inv_eq]
-  exact f.asIso.inv_hom_id
-
-@[simp, grind =]
-lemma hom_inv_id' [f.IsIso] : f ∘ f.inv = 𝟙 Y := by
-  rw [←inv_eq]
-  exact f.asIso.hom_inv_id
-
-@[simp, grind =]
-theorem hom_inv_id_assoc
-  [f.IsIso] : f.inv ∘ f ∘ h = h :=
-  by simp [←Category.assoc]
-
 instance id : (𝟙 X).IsIso where
   inv := 𝟙 X
 
-instance inv_isIso [f.IsIso] : f.inv.IsIso where
+instance trans [f.IsIso] [g.IsIso] : (g ∘ f).IsIso where
+  inv := f⁻¹ ∘ g⁻¹
+
+@[simp, grind =]
+theorem inv_id : (𝟙 X)⁻¹ = 𝟙 X := rfl
+
+instance inv_isIso [f.IsIso] : f⁻¹.IsIso where
   inv := f
 
-instance comp_isIso [f.IsIso] [g.IsIso] : (g ∘ f).IsIso where
-  inv := f.inv ∘ g.inv
-
-@[simp, grind =]
-theorem inv_id : (𝟙 X).inv = 𝟙 X := rfl
-
-@[simp, grind =]
+@[simp, grind =, grind _=_]
 theorem inv_comp [f.IsIso] [g.IsIso] :
-  (g ∘ f).inv = f.inv ∘ g.inv := rfl
+  (g ∘ f)⁻¹ = f⁻¹ ∘ g⁻¹ := rfl
 
-instance IsSplitMono [f.IsIso] : f.IsSplitMono where
-  left_inv := f.inv
-  inv_hom_id := f.asIso.inv_hom_id
+instance IsSplitMono [p : f.IsIso] : f.IsSplitMono where
+  left_inv := f⁻¹
+  inv_hom_id := p.inv_hom_id
 
-instance IsSplitEpi [f.IsIso] : f.IsSplitEpi where
-  right_inv := f.inv
-  hom_inv_id := f.asIso.hom_inv_id
+instance IsSplitEpi [p : f.IsIso] : f.IsSplitEpi where
+  right_inv := f⁻¹
+  hom_inv_id := p.hom_inv_id
 
 instance IsMono [f.IsIso] : f.IsMono :=
-  IsSplitMono.IsMono f
+  (IsIso.IsSplitMono f).IsMono
 
 instance IsEpi [f.IsIso] : f.IsEpi :=
-  IsSplitEpi.IsEpi f
+  (IsIso.IsSplitEpi f).IsEpi
+
+@[simp, grind =]
+theorem id_assoc_left [f.IsIso] :
+  f⁻¹ ∘ f ∘ h = h := by simp [←Category.assoc]
+
+@[simp, grind =]
+theorem id_assoc_right [f.IsIso] :
+  f ∘ f⁻¹ ∘ h = h := by simp [←Category.assoc]
 
 end IsIso
-
-instance SplitMono_Epi_IsIso (f : X ⟶ Y)
-  [f.IsSplitMono] [f.IsEpi] : f.IsIso where
-  inv := f.left_inv
-  inv_hom_id := f.asSplitMono.inv_hom_id
-  hom_inv_id := by
-    have p : f ∘ 𝟙 X = 𝟙 Y ∘ f := by simp
-    rw [←f.asSplitMono.inv_hom_id, ←Category.assoc] at p
-    apply f.asEpi.left_uni at p
-    simp_all
-
-instance SplitEpi_Mono_IsIso (f : X ⟶ Y)
-  [f.IsSplitEpi] [f.IsMono] : f.IsIso where
-  inv := f.right_inv
-  hom_inv_id := f.asSplitEpi.hom_inv_id
-  inv_hom_id := by
-    have p : 𝟙 Y ∘ f = f ∘ 𝟙 X := by simp
-    rw [←f.asSplitEpi.hom_inv_id, Category.assoc] at p
-    apply f.asMono.right_uni at p
-    simp_all
 
 instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
   inv := i.inv
 
-instance Iso.inv_IsIso (i : X ≅ Y) : i.inv.IsIso where
+instance Iso.invIsIso (i : X ≅ Y) : i.inv.IsIso where
   inv := i.hom
+
+instance SplitMono_Epi_IsIso (f : X ⟶ Y)
+  [p : f.IsSplitMono] [q : f.IsEpi] : f.IsIso where
+  inv := f.left_inv
+  inv_hom_id := p.inv_hom_id
+  hom_inv_id := by
+    have h : f ∘ 𝟙 X = 𝟙 Y ∘ f := by simp
+    rw [←p.inv_hom_id, ←Category.assoc] at h
+    apply q.left_uni at h
+    simp_all
+
+instance SplitEpi_Mono_IsIso (f : X ⟶ Y)
+  [p : f.IsSplitEpi] [q : f.IsMono] : f.IsIso where
+  inv := f.right_inv
+  hom_inv_id := p.hom_inv_id
+  inv_hom_id := by
+    have h : 𝟙 Y ∘ f = f ∘ 𝟙 X := by simp
+    rw [←p.hom_inv_id, Category.assoc] at h
+    apply q.right_uni at h
+    simp_all
 
 
 namespace Functor
-variable (f : X ⟶[C] Y) (F : C ⥤ D)
+variable {X Y} (f : X ⟶[C] Y) (F : C ⥤ D)
 
-lemma map_iso_eq [f.IsIso] :
-  F[f] = F[f.asIso.hom] := rfl
+instance mapIsIso [f.IsIso] : F[f].IsIso where
+  inv := F[f.inv]
 
-@[simp, grind =]
-lemma map_hom_inv_id (i : X ≅ Y) :
-  F[i.hom] ∘ F[i.inv] = 𝟙 F[Y] := by grind
-
-@[simp, grind =]
-lemma map_inv_hom_id (i : X ≅ Y) :
-  F[i.inv] ∘ F[i.hom] = 𝟙 F[X] := by grind
+@[simp, grind =, grind _=_]
+theorem mapIso.map_inv [f.IsIso] :
+  F[f.inv] = F[f].inv := rfl
 
 def mapIso (i : X ≅ Y) : F[X] ≅ F[Y] where
   hom := F[i.hom]
   inv := F[i.inv]
 
-@[simp, grind =]
-lemma mapIso_hom (i : X ≅ Y) :
-  (F.mapIso i).hom = F.map i.hom := rfl
+notation:max F "[" i "]" => mapIso F i
 
 @[simp, grind =]
-lemma mapIso_inv (i : X ≅ Y) :
-  (F.mapIso i).inv = F.map i.inv := rfl
-
-instance mapIsIso [f.IsIso] : F[f].IsIso where
-  inv := F[f.inv]
+lemma mapIso.hom (i : X ≅ Y) :
+  F[i].hom = F[i.hom] := rfl
 
 @[simp, grind =]
-theorem map_inv [f.IsIso] :
-  F[f.inv] = F[f].inv := rfl
+lemma mapIso.inv (i : X ≅ Y) :
+  F[i].inv = F[i.inv] := rfl
+
+@[simp, grind =]
+lemma mapIso.map_hom_inv_id (i : X ≅ Y) :
+  F[i.hom] ∘ F[i.inv] = 𝟙 F[Y] := by grind
+
+@[simp, grind =]
+lemma mapIso.map_inv_hom_id (i : X ≅ Y) :
+  F[i.inv] ∘ F[i.hom] = 𝟙 F[X] := by grind
 
 end Functor
 
@@ -220,14 +201,10 @@ abbrev ofComponents
   (α : F ⇒[C, D] G) (eq : ∀ X, (α·X).IsIso) : F ≅ G where
   hom := α
   inv := {
-    app X := (α·X).asIso.inv,
+    app X := (eq X).inv,
     naturality {X Y} f := calc
-      _ = (α·Y).inv ∘ (α·Y ∘ F[f]) ∘ (α·X).inv :=
-        by simp
-      _ = ((α·Y).inv ∘ α·Y) ∘ F[f] ∘ (α·X).inv :=
-        by simp only [D.assoc]
-      _ = F[f] ∘ (α·X).inv :=
-        by simp}
+      _ = (α·Y)⁻¹ ∘ (α·Y ∘ F[f]) ∘ (α·X)⁻¹ := by simp
+      _ = F[f] ∘ (α·X)⁻¹ := by grind}
 
 variable {F G : C ⥤ D} (α : F ≅ G)
 
@@ -236,22 +213,22 @@ notation α "·" X:101 => app α X
 
 @[simp, grind =]
 theorem inv_hom_id_app (X : C.obj) :
-  α.inv.app X ∘ α·X = 𝟙 F[X] := by
+  α.inv·X ∘ α·X = 𝟙 F[X] := by
   let h := α.inv_hom_id
   simp at h
   exact congrFun h X
 
 @[simp, grind =]
 theorem hom_inv_id_app (X : C.obj) :
-  α·X ∘ α.inv.app X = 𝟙 G[X] := by
+  α·X ∘ α.inv·X = 𝟙 G[X] := by
   let h := α.hom_inv_id
   simp at h
   exact congrFun h X
 
-instance IsIso (X : C.obj) : (α·X).IsIso where
+instance IsIso (X : C.obj) : (α.hom·X).IsIso where
   inv := α.inv·X
 
 instance inv_IsIso (X : C.obj) : (α.inv·X).IsIso where
-  inv := α·X
+  inv := α.hom·X
 
 end NatIso

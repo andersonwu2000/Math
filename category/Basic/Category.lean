@@ -29,6 +29,7 @@ notation:60 g:61 "∘" f:60 => @Category.comp _ _ _ _ g f
 
 attribute [trans] Category.comp
 attribute [grind =] Category.id_comp Category.comp_id
+attribute [grind _=_] Category.assoc
 attribute [simp] Category.id_comp Category.comp_id Category.assoc
 
 namespace Category

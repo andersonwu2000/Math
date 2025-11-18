@@ -1,4 +1,8 @@
 import MATH.Category.Hom.Basic
+import MATH.Category.Hom.FullyFaithful
+
+-- set_option trace.Meta.synthInstance true
+-- set_option profiler true
 
 namespace category
 
@@ -14,7 +18,7 @@ namespace yoneda
 theorem Unit
   (α : Hom[—, X] ⇒[Cᵒᵖ, Types] F) (f : A ⟶ X) :
   F[f] ((α·X) (𝟙 X)) = (α·A) f := by
-  have := (Types.naturality α f) (𝟙 X)
+  have := (Types.naturality_apply α f) (𝟙 X)
   simp_all
 
 @[simp]
@@ -40,17 +44,29 @@ def Lemma :
     case naturality
     . intro (X, F) (Y, G) (f, γ)
       ext α
-      let h := Types.naturality γ f ((α·X) (𝟙 X))
+      let h := Types.naturality_apply γ f ((α·X) (𝟙 X))
       simp at h
       simpa
-  case eq
   . exact (fun (X, F) => (Equiv X.op F).IsIso)
 
--- theorem FullyFaithful :
---   yoneda.FullyFaithful (D := ⟦Cᵒᵖ, Types⟧) := by
---     intro X Y
---     let sdf := yoneda.map
---     sorry
+instance FullyFaithful :
+  (yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧).FullyFaithful where
+  map_bijective X Y := by
+    constructor
+    case inv
+    . exact fun f => f.app _ (𝟙 _)
+    case inv_hom_id
+    . funext x
+      dsimp
+      grind
+    case hom_inv_id
+    . funext α
+      dsimp [post_comp]
+      congr
+      funext X f
+      let sdf := Unit α f
+      simp [-Unit] at sdf
+      apply sdf
 
 end yoneda
 
@@ -65,7 +81,7 @@ namespace coyoneda
 theorem Unit
   (α : Hom[X, —] ⇒[C, Types] F) (f : A ⟶ X) :
   F[f] ((α·X) (𝟙[C] X)) = (α·A) f := by
-  have := (Types.naturality α f) (𝟙 X)
+  have := (Types.naturality_apply α f) (𝟙 X)
   simp_all
 
 @[simp]
@@ -87,7 +103,7 @@ def Lemma :
     naturality := by
       intro (X, F) (Y, G) (f, γ)
       ext α
-      let h := Types.naturality γ f ((α·X) (𝟙 X))
+      let h := Types.naturality_apply γ f ((α·X) (𝟙 X))
       simp at h
       simpa}
     (fun (X, F) => (Equiv X F).IsIso)

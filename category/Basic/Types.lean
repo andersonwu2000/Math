@@ -1,8 +1,8 @@
 import MATH.Category.Hom.Iso
 
 namespace category
--- set_option trace.Meta.synthInstance true
--- set_option profiler true
+set_option trace.Meta.synthInstance true
+set_option profiler true
 
 universe u
 
@@ -18,7 +18,7 @@ namespace Types
 
 @[ext]
 theorem ext
-  (f g : X ⟶[Types] Y) (h : ∀x:X, f x = g x) : f = g := by
+  (f g : X ⟶[Types] Y) (h : ∀ x, f x = g x) : f = g := by
   funext x
   exact h x
 
@@ -60,22 +60,22 @@ end Types.Iso
 namespace Types.hom
 variable (f : X ⟶[Types] Y)
 
-theorem Injective [f.IsMono] : Function.Injective f := by
+theorem injective [p : f.IsMono] : Function.Injective f := by
   intro x1 x2 h
-  have p : f ∘[Types] Types.Point x1 = f ∘[Types] Types.Point x2 := by
+  have q : f ∘[Types] Types.Point x1 = f ∘[Types] Types.Point x2 := by
     simp [h]
-  exact congrFun (f.asMono.right_uni p) PUnit.unit
+  exact congrFun (p.right_uni q) PUnit.unit
 
-instance Injective.IsMono
-  {p : Function.Injective f} : f.IsMono where
+theorem injective.IsMono
+  (p : Function.Injective f) : f.IsMono where
   right_uni := by
     intro Z g h q
     funext z
     exact p (congrFun q z)
 
-theorem Surjective [f.IsEpi] : Function.Surjective f := by
+theorem surjective [p : f.IsEpi] : Function.Surjective f := by
     refine Function.surjective_of_right_cancellable_Prop
-      fun g₁ g₂ p => ?_
+      fun g₁ g₂ h => ?_
     let up {Z} (g : Z → Prop) : Z ⟶[Types] ULift Prop :=
       fun z => .up (g z)
     have q : up g₁ = up g₂ → g₁ = g₂ := by
@@ -85,12 +85,12 @@ theorem Surjective [f.IsEpi] : Function.Surjective f := by
       simp [up] at q
       simp_all
     apply q
-    apply f.asEpi.left_uni
+    apply p.left_uni
     change ULift.up ∘ g₁ ∘ f = ULift.up ∘ g₂ ∘ f
-    rw [p]
+    rw [h]
 
-instance Surjective.IsEpi
-  {p : Function.Surjective f} : f.IsEpi where
+theorem surjective.IsEpi
+  (p : Function.Surjective f) : f.IsEpi where
   left_uni := by
     intro Z g h q
     funext z
@@ -98,12 +98,12 @@ instance Surjective.IsEpi
     repeat rw [←p]
     exact (congrFun q a)
 
-theorem Bijective [f.IsIso] : Function.Bijective f :=
-  ⟨Injective f, Surjective f⟩
+theorem bijective [f.IsIso] : Function.Bijective f :=
+  ⟨injective f, surjective f⟩
 
 noncomputable
-instance Bijective.IsIso
-  {p : Function.Bijective f} : f.IsIso where
+instance bijective.IsIso
+  (p : Function.Bijective f) : f.IsIso where
   inv y := Classical.choose (p.2 y)
   inv_hom_id := by
     funext x
@@ -112,22 +112,22 @@ instance Bijective.IsIso
     funext y
     exact Classical.choose_spec (p.2 y)
 
+noncomputable
+instance Epi_Mono_toIso [p : f.IsEpi] [q : f.IsMono] : f.IsIso :=
+  bijective.IsIso f ⟨injective f, surjective f⟩
+
 end Types.hom
 namespace Functor
 variable (F G : C ⥤ Types)
 
 
 @[simp, grind =]
-theorem map_inv_map_hom_apply
-  (i : X ≅[C] Y) (a : F[X]) :
-  F[i.inv] (F[i.hom] a) = a :=
-  congrFun F[i.hom].asIso.inv_hom_id a
+theorem map_inv_map_hom_apply (i : X ≅[C] Y) (a : F[X]) :
+  F[i.inv] (F[i.hom] a) = a := congrFun F[i].inv_hom_id a
 
 @[simp, grind =]
-theorem map_hom_map_inv_apply
-  (i : X ≅[C] Y) (a : F[Y]) :
-  F[i.hom] (F[i.inv] a) = a :=
-  congrFun F[i.hom].asIso.hom_inv_id a
+theorem map_hom_map_inv_apply (i : X ≅[C] Y) (a : F[Y]) :
+  F[i.hom] (F[i.inv] a) = a := congrFun F[i].hom_inv_id a
 
 end Functor
 
@@ -151,13 +151,5 @@ theorem eq_symm_apply {x : F[X]} :
 @[simp]
 theorem symm_eq_apply {x : F[X]} :
   x = (α.inv·X) y ↔ y = (α.hom·X) x := by grind
-
-@[simp, grind =]
-theorem hom_Iso_hom :
-  (α.hom·X).asIso.hom x = (α.hom·X) x := rfl
-
-@[simp, grind =]
-theorem inv_Iso_hom :
-  (α.inv·X).asIso.hom x = (α.inv·X) x := rfl
 
 end NatIso

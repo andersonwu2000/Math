@@ -5,16 +5,17 @@ namespace category
 @[ext]
 structure NatTrans (F G : C ⥤ D) where
   app X : F[X] ⟶ G[X]
-  naturality (f : X ⟶[C] Y) :
-    app Y ∘ F[f] = G[f] ∘ app X := by simp
+  naturality (f : X ⟶ Y) : app Y ∘ F[f] = G[f] ∘ app X := by
+      first | grind | simp; rfl | simp
 
 namespace NatTrans
 
 notation:30 F "⇒[" C "," D "]" G => @NatTrans C D F G
 notation:30 F "⇒" G => NatTrans F G
-notation α "·" X:101 => app α X
+notation:max α "·" X:100 => app α X
 attribute [simp] naturality
 attribute [grind =] naturality
+attribute [grind _=_] naturality
 
 @[simp, grind =]
 theorem func_naturality
@@ -35,7 +36,7 @@ theorem naturality_assoc
 abbrev HorizontalComp
   (α : F ⇒[C, D] G) (β : H ⇒[D, E] K) :
   H ∘[Cat] F ⇒ K ∘[Cat] G where
-  app X := K[α·X] ∘ β·(F[X])
+  app X := K[α·X] ∘ β·F[X]
 
 notation:60 β:61 "◫" α:60 => HorizontalComp α β
 
