@@ -1,8 +1,8 @@
 import MATH.Category.Hom.Iso
 
 namespace category
-set_option trace.Meta.synthInstance true
-set_option profiler true
+-- set_option trace.Meta.synthInstance true
+-- set_option profiler true
 
 universe u
 
@@ -123,11 +123,11 @@ variable (F G : C ⥤ Types)
 
 @[simp, grind =]
 theorem map_inv_map_hom_apply (i : X ≅[C] Y) (a : F[X]) :
-  F[i.inv] (F[i.hom] a) = a := congrFun F[i].inv_hom_id a
+  F[i.inv] (F[i.hom] a) = a := congrFun (mapIso F i).inv_hom_id a
 
 @[simp, grind =]
 theorem map_hom_map_inv_apply (i : X ≅[C] Y) (a : F[Y]) :
-  F[i.hom] (F[i.inv] a) = a := congrFun F[i].hom_inv_id a
+  F[i.hom] (F[i.inv] a) = a := congrFun (mapIso F i).hom_inv_id a
 
 end Functor
 

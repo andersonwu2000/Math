@@ -1,4 +1,4 @@
-import MATH.category.Yoneda
+import MATH.Category.Hom.Yoneda
 -- set_option trace.Meta.synthInstance true
 -- set_option profiler true
 
@@ -32,7 +32,7 @@ theorem HomEquiv.naturality_right_symm
 theorem HomEquiv.naturality_left_symm
   (φ : HomEquiv F G) (f : Y ⟶ X) (g : X ⟶ G[A]) :
   (φ.equiv Y A).inv (g ∘ f) = Fᵒᵖ[f] ∘ (φ.equiv X A).inv g := by
-  rw [Iso.symm_eq_apply]
+  rw [Types.Iso.symm_eq_apply]
   grind
 
 abbrev HomEquiv.hom
@@ -191,9 +191,12 @@ abbrev coUniversal.property (u : coUniversal F A X) :
       simp [←q] at p
       exact (u.eq_symm_apply.mp p.symm).symm⟩
 
--- abbrev Universal.left_adjoint (f : C.obj → D.obj)
---   (p : Universal G X (f X)) : C ⥤ D where
---   obj := f
---   map f := sorry
+abbrev Universal.left_adjoint (F : C.obj → D.obj)
+  (p : ∀ X, Universal G X (F X)) : C ⥤ D where
+  obj := F
+  map {X Y} f :=
+    let α := (p X).inv ∘ Hom[f, G—] ∘ (p Y).hom
+
+    sorry
 
 end UniversalProperty

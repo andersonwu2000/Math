@@ -7,23 +7,24 @@ import MATH.Category.Hom.FullyFaithful
 namespace category
 
 
-@[simp]
+@[simps]
 def yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧ where
   obj X := Hom[—, X]
   map f := post_comp f
 
 namespace yoneda
+variable {C : Category}
 
 @[simp, grind =]
 theorem Unit
-  (α : Hom[—, X] ⇒[Cᵒᵖ, Types] F) (f : A ⟶ X) :
+  (α : yoneda[X] ⇒[Cᵒᵖ, Types] F) (f : A ⟶ X) :
   F[f] ((α·X) (𝟙 X)) = (α·A) f := by
   have := (Types.naturality_apply α f) (𝟙 X)
   simp_all
 
 @[simp]
 def Equiv (X : C.obj) (F : Cᵒᵖ ⥤ Types) :
-  (Hom[—, X] ⇒ F) ≅[Types] F.obj X where
+  (yoneda[X] ⇒ F) ≅[Types] F.obj X where
   hom α := (α·X) (𝟙 X)
   inv a := {app _ f := F[f] a}
   inv_hom_id := by simp; ext; simp
@@ -49,24 +50,22 @@ def Lemma :
       simpa
   . exact (fun (X, F) => (Equiv X.op F).IsIso)
 
+@[simp]
+theorem Equiv.inv_eq (X Y : C.obj) :
+  (Equiv X yoneda[Y]).inv = yoneda.map := by aesop
+
+def Equiv.yoneda_iso (X Y : C.obj) :
+  (yoneda[X] ⇒ yoneda[Y]) ≅[Types] Hom[X, Y] where
+  hom := (Equiv X yoneda[Y]).hom
+  inv := yoneda.map
+  inv_hom_id := by
+    let p := (Equiv X yoneda[Y]).inv_hom_id
+    simp at p
+    exact p
+
 instance FullyFaithful :
   (yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧).FullyFaithful where
-  map_bijective X Y := by
-    constructor
-    case inv
-    . exact fun f => f.app _ (𝟙 _)
-    case inv_hom_id
-    . funext x
-      dsimp
-      grind
-    case hom_inv_id
-    . funext α
-      dsimp [post_comp]
-      congr
-      funext X f
-      let sdf := Unit α f
-      simp [-Unit] at sdf
-      apply sdf
+  map_bijective X Y := (Equiv.yoneda_iso X Y).symm.IsIso
 
 end yoneda
 
@@ -76,6 +75,7 @@ def coyoneda : Cᵒᵖ ⥤ ⟦C, Types⟧ where
   map f := pre_comp f
 
 namespace coyoneda
+variable {C : Category}
 
 @[simp, grind =]
 theorem Unit
@@ -107,6 +107,29 @@ def Lemma :
       simp at h
       simpa}
     (fun (X, F) => (Equiv X F).IsIso)
+
+@[simp]
+theorem Equiv.inv_eq (X Y : C.obj) :
+  (Equiv X coyoneda[Y]).inv = coyoneda.map := by aesop
+
+def Equiv.coyoneda_iso (X Y : C.obj) :
+  Hom[Y, X] ≅[Types] (coyoneda[X] ⇒ coyoneda[Y]) where
+  hom := coyoneda.map
+  inv := (Equiv X coyoneda[Y]).hom
+  inv_hom_id := by
+    let p := (Equiv X coyoneda[Y]).inv_hom_id
+    simp at p
+    aesop
+  hom_inv_id := by
+    let p := (Equiv X coyoneda[Y]).inv_hom_id
+    simp at p
+    aesop
+
+instance FullyFaithful :
+  (coyoneda : Cᵒᵖ ⥤ ⟦C, Types⟧).FullyFaithful where
+  map_bijective Y X := by
+    simp at X Y
+    exact (Equiv.coyoneda_iso Y X).IsIso
 
 
 end coyoneda

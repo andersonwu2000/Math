@@ -22,8 +22,8 @@ Notation
       app
       IsIso : components are Iso
 -/
-set_option trace.Meta.synthInstance true
-set_option profiler true
+-- set_option trace.Meta.synthInstance true
+-- set_option profiler true
 
 namespace category
 variable {C : Category}
@@ -171,15 +171,13 @@ def mapIso (i : X ≅ Y) : F[X] ≅ F[Y] where
   hom := F[i.hom]
   inv := F[i.inv]
 
-notation:max F "[" i "]" => mapIso F i
-
 @[simp, grind =]
 lemma mapIso.hom (i : X ≅ Y) :
-  F[i].hom = F[i.hom] := rfl
+  (mapIso F i).hom = F[i.hom] := rfl
 
 @[simp, grind =]
 lemma mapIso.inv (i : X ≅ Y) :
-  F[i].inv = F[i.inv] := rfl
+  (mapIso F i).inv = F[i.inv] := rfl
 
 @[simp, grind =]
 lemma mapIso.map_hom_inv_id (i : X ≅ Y) :

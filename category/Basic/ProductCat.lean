@@ -15,6 +15,7 @@ abbrev Category.hom.Prod
   (f : X ⟶[C] Y) (g : A ⟶[D] B) :
   (X, A) ⟶[C × D] (Y, B) := (f, g)
 
+notation:50 f:51 "×" g:50 => Category.hom.Prod f g
 
 namespace ProductCat
 
@@ -57,6 +58,15 @@ abbrev fix_right : C ⥤ E where
 notation F "[—"  "," X "]" => fix_right F X
 notation F "[" X "," "—]" => fix_left F X
 
+abbrev fix_left_hom (f : A ⟶ B) : F[A, Y] ⟶ F[B, Y] :=
+  F[—, Y][f]
+
+abbrev fix_right_hom (f : A ⟶ B) : F[X, A] ⟶ F[X, B] :=
+  F[X, —][f]
+
+notation F "[" f "," X "]" => fix_left_hom F X f
+notation F "[" X "," f "]" => fix_right_hom F X f
+
 abbrev comp_left (G : B ⥤ C) : B × D ⥤ E where
   obj := fun (X, Y) => F[G[X], Y]
   map := fun (f, g) => F[G[f], g]
@@ -84,6 +94,17 @@ abbrev fix_comp (G : B ⥤ D) : B ⥤ E where
 
 notation F "[" G "—" "," Y "]" => comp_fix F Y G
 notation F "[" Y  "," G "—]" => fix_comp F Y G
+
+abbrev comp_fix_hom
+  (G : B ⥤ C) (f : M ⟶ N) : F[G—, M] ⇒ F[G—, N] where
+  app W := F[G—, —][𝟙 W × f]
+
+abbrev fix_comp_hom
+  (G : B ⥤ D) (f : M ⟶ N) : F[M, G—] ⇒ F[N, G—] where
+  app W := F[—, G—][f × 𝟙 W]
+
+notation F "[" G "—" "," f "]" => comp_fix F G f
+notation F "[" f  "," G "—]" => fix_comp_hom F G f
 
 end Functor
 
