@@ -1,0 +1,236 @@
+# 架構與精簡化建議
+
+════════════════════════════════════════════════════════════════
+## A. 整體架構建議
+════════════════════════════════════════════════════════════════
+
+### A1. Cat.comp 展開問題——建議加 simp 引理
+**問題**：`(Cat.comp G F)[f]` 不是定義相等於 `G[F[f]]`，
+每次都需要 `simp only [Cat.eq_1, Function.comp_apply]` 才能展開。
+這個模式在整個 Adjunction 和 NatTrans 的證明中重複出現。
+
+**建議**：在 `Functor/Basic.lean` 中加入：
+```lean
+@[simp, grind =]
+lemma Cat.comp_map (G : D ⥤ E) (F : C ⥤ D) (f : X ⟶[C] Y) :
+  (G ○[Cat] F)[f] = G[F[f]] := rfl
+```
+這樣 `simp` 就能自動展開函子合成，許多 `simp only [Cat.eq_1, Function.comp_apply]` 就可以消除。
+
+### A2. 伴隨定義的主表述選擇
+**現狀**：`Adjunction` 定義為自然同構 `Hom[Fᵒᵖ–, –] ≅ Hom[–, G–]`，
+然後衍生 `HomEquiv`、`HomMate`、`Units`。
+
+**觀察**：在實際證明中，`HomEquiv` 的兩條獨立自然性條件
+（`naturality_left`, `naturality_right`）比操作整個自然同構更直接。
+很多 `simp only [ProductCat_obj, ProductCat_hom, Hom.eq_1, ...]` 的組合
+是為了從 `Adjunction` 的自然同構形式還原出 `HomEquiv` 的分量形式。
+
+**建議（探索性）**：可以考慮以 `HomEquiv` 作為「主表述」，
+然後 `Adjunction = HomEquiv.Adjunction`，讓其他表述自然推出。
+代價是失去簡潔的自然同構記號，得益是證明更直接。
+
+### A3. Units 三角恆等式的存儲形式
+**問題**：`Units.left_triangle_hom` 在 `simp` 資料庫中是右結合形式：
+`f ○ ε·F[X] ○ F[η·X] = f`（其中前兩個 `○` 是右結合的）。
+在 `inv_hom_id` 的證明中，需要先 `simp only [id_eq, Category.assoc]`
+才能讓 goal 正規化到可以用 `exact` 匹配的形式。
+
+**建議**：在 `left_triangle_hom` 和 `right_triangle_hom` 的 simp 引理旁，
+考慮新增一個備用形式：
+```lean
+@[simp, grind =]
+theorem Units.left_triangle_hom'
+  (u : Units F G) {X : C.obj} :
+  u.ε·F[X] ○ F[u.η·X] = 𝟙 := by simpa using u.left_triangle_hom (f := 𝟙)
+```
+這樣某些場合可以直接 `simp` 消去而不需要 `exact`。
+
+
+════════════════════════════════════════════════════════════════
+## B. 證明架構建議
+════════════════════════════════════════════════════════════════
+
+### B1. simp 組合的重複模式——可考慮 macro 或 named simp set
+在 `Units.Adjunction` 中，以下組合出現多次：
+```lean
+simp only [ProductCat_obj, ProductCat_hom, Hom.eq_1, Cat.eq_1,
+           Function.comp_def, Function.comp_apply, Functor.map_comp,
+           Category.assoc, Prod.forall]
+```
+以及：
+```lean
+simp only [Cat.eq_1, Function.comp_def, Function.comp_apply, id_eq]
+```
+
+**建議**：可以考慮用 `attribute [local simp]` 在 section 內臨時啟用，
+或用 `simp_rw` 簡化某些步驟，或（若 Lean 4 支持）定義 named simp set。
+
+### B2. HomEquiv.naturality_left/right 的 simp 策略
+`naturality_left` 和 `naturality_right` 都是 `@[simp, grind]`，
+但在 `HomMate.mate` 逆方向的證明中，
+simp 若展開 `naturality_right` 會造成 cycle。
+目前用 `simp [-naturality_right]` 解決。
+
+**觀察**：這種「需要用 `-simp_lemma` 排除」的情況通常說明
+simp 引理的方向或優先級有可以調整的空間。
+考慮是否應將 `naturality_right_symm`（逆版本）改為 simp 引理而非正向版本，
+視乎哪個方向在更多證明中是「化簡方向」。
+
+### B3. erw vs rw 在 naturality 的使用
+在 `Units.Adjunction hom_inv_id` 中需要 `erw [← u.η.naturality f]`，
+而非 `rw`，原因是 goal 中含有 `Cat.comp` 的底層形式。
+
+若 A1 的建議（加 `Cat.comp_map` simp 引理）被採納，
+則在 `simp only` 之後 goal 中就不會出現 `Cat.comp` 的原始形式，
+可以改回 `rw`，消除 `erw` 的使用（`erw` 比 `rw` 更危險，可能掩蓋型別問題）。
+
+### B4. congrFun 的使用模式
+很多證明的模式是：
+```lean
+let p := congrFun (α.naturality f) x
+simp at p
+exact p
+```
+或者：
+```lean
+simpa using congrFun (α.naturality f) x
+```
+後者更簡潔。建議統一使用 `simpa using congrFun ...` 的模式。
+
+### B5. Whisker.left_cancel / right_cancel 的使用
+在 `Units.Adjunction hom` 的自然性證明中：
+```lean
+repeat apply Whisker.left_cancel
+exact (u.η.naturality f).symm
+```
+這個模式很清晰，但 `repeat` 在 Lean 4 中有時可能不穩定（若 goal 形式改變）。
+考慮用明確的 `apply Whisker.left_cancel; apply Whisker.left_cancel` 取代。
+
+
+════════════════════════════════════════════════════════════════
+## C. 精簡化建議
+════════════════════════════════════════════════════════════════
+
+### C1. Universal 和 coUniversal 的對偶性
+`Universal` 和 `coUniversal` 目前是兩套平行的定義和定理，
+每個定理都有對應的 `co` 版本。
+
+**建議**：考慮以 `coUniversal` 為主（或以對偶函子表達 `Universal`）：
+```lean
+def Universal G X A := coUniversal Gᵒᵖ X A
+```
+或反過來。這可以消除大量重複代碼。
+但代價是符號上可能不夠直觀。
+
+### C2. Yoneda/coyoneda 的平行結構
+`yoneda.lean` 中 `yoneda` 和 `coyoneda` 是完全平行的兩個嵌入，
+每個引理都有對偶版本。
+
+**建議**：考慮用 `coyoneda.{universe}[Cᵒᵖ]` 導出 `yoneda`，
+或反過來，減少重複。不過此修改的代價較大。
+
+### C3. Morphism/EpiMono.lean 的 class 設計
+`IsMono`、`IsEpi`、`IsSplitMono`、`IsSplitEpi`、`IsIso` 五個 class
+有很多重複的「合成穩定性」和「對偶性」引理。
+
+**建議**：可以考慮提取公共模式，例如：
+```lean
+-- 若 f 是「左可消的」，則 f.op 是「右可消的」
+-- 若 g ○ f 是「左可消的」，則 f 是「左可消的」
+```
+但在 Lean 4 中，class 的繼承結構已經部分處理了這些關係。
+
+### C4. HomEquiv ↔ HomMate ↔ Adjunction 的循環轉換
+目前的轉換鏈：
+```
+HomEquiv.Adjunction : HomEquiv → Adjunction
+Adjunction.HomEquiv : Adjunction → HomEquiv
+HomMate.HomEquiv   : HomMate → HomEquiv
+HomEquiv.HomMate   : HomEquiv → HomMate
+HomMate.Adjunction : HomMate → Adjunction
+Adjunction.HomMate : Adjunction → HomMate
+```
+這是一個完整的等價網路，但未驗證「來回轉換是恆等」。
+**建議**：在 `Adjunction/Basic.lean` 結尾加入驗證：
+```lean
+lemma HomEquiv_roundtrip (φ : HomEquiv F G) :
+  φ.Adjunction.HomEquiv.equiv = φ.equiv := by ...
+```
+這確認了三種表述的「等價性」不只是方向上的，而是真正的同構。
+
+### C5. `@[simp] def Adjunction` 的風險
+將 `Adjunction` 的型別定義標記為 `@[simp]` 會讓 simp 自動展開
+所有出現 `F ⊣ G` 的地方。這可能造成意外的展開。
+
+**建議**：移除 `@[simp]`，改在需要展開時明確使用 `simp [Adjunction]`。
+
+### C6. Units 結構的三角恆等式形式
+```lean
+left_triangle  : 𝟙[⟦C, D⟧] F = (ε ◫ F) ○ (F ◫ η)
+right_triangle : 𝟙[⟦D, C⟧] G = (G ◫ ε) ○ (η ◫ G)
+```
+目前存儲為「恆等 = 合成」（右側是 hom 形式）。
+但實際使用的是逐點版本 `left_triangle_hom` 和 `right_triangle_hom`。
+
+**建議**：考慮直接以逐點形式定義三角恆等式：
+```lean
+left_triangle  : ∀ X, ε·F[X] ○ F[η·X] = 𝟙
+right_triangle : ∀ Y, G[ε·Y] ○ η·G[Y] = 𝟙
+```
+這樣可以直接 `simp [u.left_triangle]` 而不需要從自然變換等式提取逐點版本。
+代價是失去「自然變換等式」的形式，可能在某些抽象論證中較不便。
+
+
+════════════════════════════════════════════════════════════════
+## D. 命名與記號建議
+════════════════════════════════════════════════════════════════
+
+### D1. F[X] 同時用於物件和態射
+目前 `F[X]` 和 `F[f]` 使用相同記號，依賴 Lean 的型別推斷區分。
+這在數學上很自然，但在複雜表達式中可能造成歧義。
+建議維持現狀（與數學慣例一致），但在文件中明確說明。
+
+### D2. `abbrev` vs `def` 的一致性
+目前：
+- `HomEquiv.Adjunction`（构造伴隨）：`def`
+- `Adjunction.HomEquiv`（提取 HomEquiv）：`abbrev`
+- `Units.Adjunction`（从 Units 构造）：`def`
+- `Adjunction.Units`（提取 Units）：`abbrev`
+
+建議保持一致：「構造」用 `def`，「提取/投影」用 `abbrev`。
+目前大致如此，可以確認一遍。
+
+### D3. `Hom.eq_1` 在 simp 中的語義
+`Hom.eq_1` 展開 Hom 函子的定義，經常需要搭配 `ProductCat_obj` 等使用。
+這組合式的語義不直觀。若 A1 的 `Cat.comp_map` 被採納，
+應當一併整理這組 simp 引理的職責分工。
+
+
+════════════════════════════════════════════════════════════════
+## E. 未來擴展建議
+════════════════════════════════════════════════════════════════
+
+### E1. Adjoint Functor Theorem 的路徑
+目前已有：
+- Universal Property → Adjunction（`Universal.Adjunction`）
+- Adjunction → Universal Property（`Adjunction.Universal`）
+
+下一步可以考慮：
+- Limits + Solution Set Condition → Left Adjoint（Freyd 定理）
+- Cocomplete + Accessible → Left Adjoint
+
+### E2. Monad / Comonad
+由 `Units` 結構可以自然地定義 Monad：
+```lean
+structure Monad (T : C ⥤ C) where
+  η : 𝟙 ⇒ T
+  μ : T ○ T ⇒ T
+  -- 三條公理...
+```
+伴隨誘導 Monad（`G ○ F`），這是下一步的自然延伸。
+
+### E3. Limits 與 Adjunction 的連接
+`Limits/Basic.lean` 已存在，但 `lim ⊣ Δ` 的伴隨尚未建立。
+利用 `Universal.Adjunction` 的框架，可以從「每個圖表都有極限」
+直接構造 `lim ⊣ Δ` 的伴隨關係。
