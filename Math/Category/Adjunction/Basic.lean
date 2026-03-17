@@ -73,7 +73,7 @@ theorem HomEquiv.naturality_left_symm
   simp at h
   simpa using h.symm
 
-def HomEquiv.Adjunction
+def Adjunction.ofHomEquiv
   (φ : HomEquiv F G) : F ⊣ G := NatIso.ofComponents
     ⟨fun (X, Y) => (φ.equiv X.op Y).hom, by
       simp only [ProductCat_obj, ProductCat_hom, Hom.eq_1,
@@ -119,8 +119,8 @@ def HomMate.HomEquiv (φ : HomMate F G) : HomEquiv F G where
     have := φ.mate f (k ○ f) (𝟙 X) k
     simp_all
 
-def HomMate.Adjunction (φ : HomMate F G) : F ⊣ G :=
-  φ.HomEquiv.Adjunction
+def Adjunction.ofHomMate (φ : HomMate F G) : F ⊣ G :=
+  Adjunction.ofHomEquiv φ.HomEquiv
 
 def HomEquiv.HomMate (φ : HomEquiv F G) : HomMate F G where
   equiv := φ.equiv
@@ -201,7 +201,7 @@ theorem Units.sharp_flat_id
     simpa using Units.right_tri_id u
 
 /-- 從 `Units` 構造 adjunction -/
-def Units.Adjunction
+def Adjunction.ofUnits
   (u : Units F G) : F ⊣ G where
   hom := ⟨fun (X, Y) f => G[f] ○ u.η·X, by
     simp only [ProductCat_obj, ProductCat_hom, Hom.eq_1, Cat.eq_1, Function.comp_def,
@@ -304,25 +304,25 @@ abbrev coUniversal.right_adjoint {F : C ⥤ D} {G : D.obj → C.obj}
     simp_all
 
 /-- `left_adjoint p ⊣ G` -/
-def Universal.Adjunction (G : D ⥤ C) (F : C.obj → D.obj)
-  (p : ∀ X, Universal G X (F X)) : left_adjoint p ⊣ G :=
+def Adjunction.ofUniversal (G : D ⥤ C) (F : C.obj → D.obj)
+  (p : ∀ X, Universal G X (F X)) : Universal.left_adjoint p ⊣ G :=
   NatIso.ofComponents
     ⟨fun (X, A) => (p X).hom·A, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := factorization (p X) _ ((p X)·A h)
-      have q₁ := congrFun ((p Y).hom.naturality (g ○ h)) (left_adjoint p)[f]
+      have q₀ := Universal.factorization (p X) _ ((p X)·A h)
+      have q₁ := congrFun ((p Y).hom.naturality (g ○ h)) (Universal.left_adjoint p)[f]
       simp_all⟩
     fun (X, A) => (p X).IsIso A
 
 /-- `F ⊣ right_adjoint p` -/
-def coUniversal.Adjunction (F : C ⥤ D) (G : D.obj → C.obj)
-  (p : ∀ A, coUniversal F A (G A)) : F ⊣ right_adjoint p :=
+def Adjunction.ofcoUniversal (F : C ⥤ D) (G : D.obj → C.obj)
+  (p : ∀ A, coUniversal F A (G A)) : F ⊣ coUniversal.right_adjoint p :=
   NatIso.ofComponents
     ⟨fun (X, A) => (p A).hom·X, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := factorization (p A) _ (h ○ F[f])
+      have q₀ := coUniversal.factorization (p A) _ (h ○ F[f])
       have q₁ := congrFun ((p B).hom.naturality ((p A)·X h ○[C] f)) (g ○ (p A)⁻¹·(G A) (𝟙))
       have q₂ := congrFun ((p A).hom.naturality f) h
       simp at q₂

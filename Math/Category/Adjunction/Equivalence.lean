@@ -272,7 +272,7 @@ noncomputable def make_right_adj : D ⥤ C where
       simp only [← Category.assoc, (right_adj_iso F A).hom_inv_id, Category.comp_id]
     simp only [Functor.map_comp, F.map_preimage_id, Category.assoc, hA]
 
-/-- 從全忠實 + 本質滿射構造伴隨等價（主要方向 (3) → (2)） -/
+/-- 從全忠實 + 本質滿射構造伴隨等價 -/
 noncomputable def ofFullyFaithful :
     AdjointEquivalence F (make_right_adj F) := by
   let G := make_right_adj F
