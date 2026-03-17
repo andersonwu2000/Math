@@ -306,7 +306,7 @@ noncomputable def ofFullyFaithful :
       simp only [Functor.map_comp, F.map_preimage_id, G, make_right_adj,
                  right_adj_obj, Category.assoc]
       grind}
-  let φ := hEquiv.Adjunction
+  let φ := Adjunction.ofHomEquiv hEquiv
   -- φ.η·X = F.preimage(εi(FX)⁻¹) 是同構
   have η_comp_iso (X : C.obj) : (φ.η·X).IsIso := by
     have hval : F[φ.η·X] = (εi (F[X])).inv := by
