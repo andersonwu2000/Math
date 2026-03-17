@@ -20,5 +20,6 @@ import MATH.Category.Adjunction.Equivalence
 import MATH.Category.Limits.Basic
 import MATH.Category.Limits.Canonical
 import MATH.Category.Limits.Complete
+import MATH.Category.Limits.InitialTerminal
 import MATH.Category.UniversalProperty
 import MATH.Category.Yoneda
