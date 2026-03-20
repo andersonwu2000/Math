@@ -9,6 +9,8 @@ Initial / terminal object：空圖的 colimit / limit。
 ## 定義
 - `Initial C` — C 有 initial object，即空圖的 colimit
 - `Terminal C` — C 有 terminal object，即空圖的 limit
+- `C.Initial` — C 的 initial object（`[Initial C]` 時可用）
+- `C.Terminal` — C 的 terminal object（`[Terminal C]` 時可用）
 - `InitialData C` — initial object `obj` 及唯一態射 `map`
 - `TerminalData C` — terminal object `obj` 及唯一態射 `map`
 
@@ -16,13 +18,13 @@ Initial / terminal object：空圖的 colimit / limit。
 ### `Initial`
 - `.data` — `Initial` ⟹ `InitialData`
 - `.unique` — initial object 在 iso 下唯一
-- `ShapeCoComplete.instInitial` — `ShapeCoComplete` ⟹ `Initial`
+- `ShapeCoComplete.Initial` — `ShapeCoComplete` ⟹ `Initial`
 ### `InitialData`
 - `.toInitial` — `InitialData` ⟹ `Initial`
 ### `Terminal`
 - `.data` — `Terminal` ⟹ `TerminalData`
 - `.unique` — terminal object 在 iso 下唯一
-- `ShapeComplete.instTerminal` — `ShapeComplete` ⟹ `Terminal`
+- `ShapeComplete.Terminal` — `ShapeComplete` ⟹ `Terminal`
 ### `TerminalData`
 - `.toTerminal` — `TerminalData` ⟹ `Terminal`
 -/
@@ -49,30 +51,6 @@ structure TerminalData where
   map X : X ⟶ obj
   map_unique (f : X ⟶ obj) : f = map X
 
-/-- `InitialData` ⟹ `Initial` -/
-@[reducible]
-noncomputable def InitialData.toInitial (id : InitialData C) : Initial C where
-  obj := id.obj
-  rep := (CoLimitData.toCoLimit {
-    obj             := id.obj
-    cocone          := emptyNatTrans _ _
-    desc _          := id.map _
-    desc_ι _ j      := PEmpty.elim j
-    desc_unique _ k _ := id.map_unique k
-  }).rep
-
-/-- `TerminalData` ⟹ `Terminal` -/
-@[reducible]
-noncomputable def TerminalData.toTerminal (td : TerminalData C) : Terminal C where
-  obj := td.obj
-  rep := (LimitData.toLimit {
-    obj              := td.obj
-    cone             := emptyNatTrans _ _
-    lift _           := td.map _
-    lift_π _ j       := PEmpty.elim j
-    lift_unique _ k _ := td.map_unique k
-  }).rep
-
 -- ─── Initial ──────────────────────────────────────────────────────────────────
 
 namespace Initial
@@ -88,12 +66,27 @@ noncomputable def data [h : Initial C] : InitialData C :=
 noncomputable def unique (h₁ h₂ : Initial C) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
-instance (priority := 100) ShapeCoComplete.instInitial
+instance (priority := 100) ShapeCoComplete.Initial
     [h : @ShapeCoComplete EmptyCat.{0} C] : Initial C where
-  obj := (h.hascolimit (emptyFunctor C)).obj
-  rep := (h.hascolimit (emptyFunctor C)).rep
+  obj := (h.hasCoLimit (emptyFunctor C)).obj
+  rep := (h.hasCoLimit (emptyFunctor C)).rep
 
 end Initial
+
+/-- C 的 initial object -/
+def Category.Initial [h : Initial C] := h.obj
+
+/-- `InitialData` ⟹ `Initial` -/
+@[reducible]
+noncomputable def InitialData.toInitial (id : InitialData C) : Initial C where
+  obj := id.obj
+  rep := (CoLimitData.toCoLimit {
+    obj             := id.obj
+    cocone          := emptyNatTrans _ _
+    desc _          := id.map _
+    desc_ι _ j      := PEmpty.elim j
+    desc_unique _ k _ := id.map_unique k
+  }).rep
 
 -- ─── Terminal ─────────────────────────────────────────────────────────────────
 
@@ -110,11 +103,26 @@ noncomputable def data [h : Terminal C] : TerminalData C :=
 noncomputable def unique (h₁ h₂ : Terminal C) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
-instance (priority := 100) ShapeComplete.instTerminal
+instance (priority := 100) ShapeComplete.Terminal
     [h : @ShapeComplete EmptyCat.{0} C] : Terminal C where
   obj := (h.hasLimit (emptyFunctor C)).obj
   rep := (h.hasLimit (emptyFunctor C)).rep
 
 end Terminal
+
+/-- C 的 terminal object -/
+def Category.Terminal [h : Terminal C] := h.obj
+
+/-- `TerminalData` ⟹ `Terminal` -/
+@[reducible]
+noncomputable def TerminalData.toTerminal (td : TerminalData C) : Terminal C where
+  obj := td.obj
+  rep := (LimitData.toLimit {
+    obj              := td.obj
+    cone             := emptyNatTrans _ _
+    lift _           := td.map _
+    lift_π _ j       := PEmpty.elim j
+    lift_unique _ k _ := td.map_unique k
+  }).rep
 
 end CategoryTheory

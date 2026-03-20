@@ -79,7 +79,6 @@ lemma right_cancel : f = g → f ○ h = g ○ h := congrArg (· ○ h)
 lemma left_cancel : f = g → h ○ f = h ○ g := congrArg (h ○ ·)
 
 /-- 三重消去：(a ○ b ○ c) ○ (d ○ g ○ f) = 𝟙，其中 c ○ d = 𝟙、b ○ g = 𝟙、a ○ f = 𝟙 -/
-@[simp, grind =]
 lemma triple_cancel
     (p1 : c ○ d = 𝟙) (p2 : b ○ g = 𝟙) (p3 : a ○ f = 𝟙) :
     (a ○ b ○ c) ○ (d ○ g ○ f) = 𝟙 := by

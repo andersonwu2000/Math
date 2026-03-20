@@ -16,12 +16,14 @@ Complete category。
 - `ShapeCoComplete` — colimit 版本
 
 ## 定理
-### `Complete` / `ShapeComplete`
-- `.instShapeComplete` — `Complete C` ⟹ `ShapeComplete J C`（由 `Δ ⊣ lim` 推導）
-- `.instLimit` — `ShapeComplete J C` ⟹ `Limit F`
-### `CoComplete` / `ShapeCoComplete`
-- `.instShapeCoComplete` — `CoComplete C` ⟹ `ShapeCoComplete J C`（由 `colim ⊣ Δ` 推導）
-- `.instCoLimit` — `ShapeCoComplete J C` ⟹ `CoLimit F`
+### `Complete`
+- `.ShapeComplete` — `Complete C` ⟹ `ShapeComplete J C`（由 `Δ ⊣ lim` 推導）
+### `ShapeComplete`
+- `.Limit` — `ShapeComplete J C` ⟹ `Limit F`
+### `CoComplete`
+- `.ShapeCoComplete` — `CoComplete C` ⟹ `ShapeCoComplete J C`（由 `colim ⊣ Δ` 推導）
+### `ShapeCoComplete`
+- `.CoLimit` — `ShapeCoComplete J C` ⟹ `CoLimit F`
 -/
 
 namespace CategoryTheory
@@ -36,11 +38,11 @@ class ShapeComplete (J C : Category) where
   hasLimit (F : J ⥤ C) : Limit F
 
 /-- `Complete C` 蘊含 `ShapeComplete J C`：`lim[F]` 是 `F` 的 limit -/
-instance (priority := 100) Complete.instShapeComplete
+instance (priority := 100) Complete.ShapeComplete
     [h : Complete.{u, v} C] {J : Category.{u, v}} : ShapeComplete J C where
   hasLimit F := { obj := h.lim[F], rep := (h.adj.CoUniversal F).rep }
 
-instance (priority := 100) ShapeComplete.instLimit
+instance (priority := 100) ShapeComplete.Limit
     [h : ShapeComplete J C] {F : J ⥤ C} : Limit F :=
   h.hasLimit F
 
@@ -51,15 +53,15 @@ class CoComplete (C : Category) where
 
 /-- `C` 對 shape `J` 的所有 functor 都有 colimit -/
 class ShapeCoComplete (J C : Category) where
-  hascolimit (F : J ⥤ C) : CoLimit F
+  hasCoLimit (F : J ⥤ C) : CoLimit F
 
 /-- `CoComplete C` 蘊含 `ShapeCoComplete J C`：`colim[F]` 是 `F` 的 colimit -/
-instance (priority := 100) CoComplete.instShapeCoComplete
+instance (priority := 100) CoComplete.ShapeCoComplete
     [h : CoComplete.{u, v} C] {J : Category.{u, v}} : ShapeCoComplete J C where
-  hascolimit F := { obj := h.colim[F], rep := (h.adj.Universal F).rep }
+  hasCoLimit F := { obj := h.colim[F], rep := (h.adj.Universal F).rep }
 
-instance (priority := 100) ShapeCoComplete.instCoLimit
+instance (priority := 100) ShapeCoComplete.CoLimit
     [h : ShapeCoComplete J C] {F : J ⥤ C} : CoLimit F :=
-  h.hascolimit F
+  h.hasCoLimit F
 
 end CategoryTheory

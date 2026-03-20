@@ -24,11 +24,11 @@ structure ZeroData (C : Category) where
   /-- Zero object -/
   zero : C.obj
   /-- 唯一態射 `zero ⟶ Y`（initial） -/
-  from_zero (Y : C.obj) : zero ⟶ Y
-  from_zero_unique (f : zero ⟶ Y) : f = from_zero Y
+  fromZero (Y : C.obj) : zero ⟶ Y
+  fromZeroUnique (f : zero ⟶ Y) : f = fromZero Y
   /-- 唯一態射 `X ⟶ zero`（terminal） -/
-  to_zero (X : C.obj) : X ⟶ zero
-  to_zero_unique (f : X ⟶ zero) : f = to_zero X
+  toZero (X : C.obj) : X ⟶ zero
+  toZeroUnique (f : X ⟶ zero) : f = toZero X
 
 -- ─── ZeroData ─────────────────────────────────────────────────────────────────
 
@@ -39,14 +39,14 @@ variable {C : Category}
 /-- `ZeroData` ⟹ `InitialData` -/
 def toInitialData (h : ZeroData C) : InitialData C where
   obj := h.zero
-  map := h.from_zero
-  map_unique := h.from_zero_unique
+  map := h.fromZero
+  map_unique := h.fromZeroUnique
 
 /-- `ZeroData` ⟹ `TerminalData` -/
 def toTerminalData (h : ZeroData C) : TerminalData C where
   obj := h.zero
-  map := h.to_zero
-  map_unique := h.to_zero_unique
+  map := h.toZero
+  map_unique := h.toZeroUnique
 
 /-- `ZeroData` ⟹ `Initial` -/
 @[reducible]
@@ -60,7 +60,7 @@ noncomputable def toTerminal (h : ZeroData C) : Terminal C :=
 
 /-- Zero morphism `X ⟶ Y`：透過 zero object 的合成 -/
 def zeroHom (h : ZeroData C) (X Y : C.obj) : X ⟶ Y :=
-  h.from_zero Y ○ h.to_zero X
+  h.fromZero Y ○ h.toZero X
 
 end ZeroData
 

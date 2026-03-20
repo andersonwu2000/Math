@@ -12,18 +12,20 @@ Binary product / coproduct：兩個 object 的 product / coproduct。
 - `BinaryCoproduct A B` — `CoLimit (discreteFunctor (BinaryFamily A B))`
 - `BinaryProductData A B` — binary product object `obj`、projections `π₁` `π₂`、universal `lift`
 - `BinaryCoproductData A B` — binary coproduct object `obj`、injections `ι₁` `ι₂`、universal `desc`
+- `Prod.BinaryProduct` — `A` 和 `B` 的 binary product object
+- `Prod.BinaryCoproduct` — `A` 和 `B` 的 binary coproduct object
 
 ## 定理
 ### `BinaryProduct`
 - `.data` — `BinaryProduct` ⟹ `BinaryProductData`
 - `.unique` — binary product 在 iso 下唯一
-- `ShapeComplete.instBinaryProduct` — `ShapeComplete` ⟹ `BinaryProduct`
+- `ShapeComplete.BinaryProduct` — `ShapeComplete` ⟹ `BinaryProduct`
 ### `BinaryProductData`
 - `.toBinaryProduct` — `BinaryProductData` ⟹ `BinaryProduct`
 ### `BinaryCoproduct`
 - `.data` — `BinaryCoproduct` ⟹ `BinaryCoproductData`
 - `.unique` — binary coproduct 在 iso 下唯一
-- `ShapeCoComplete.instBinaryCoproduct` — `ShapeCoComplete` ⟹ `BinaryCoproduct`
+- `ShapeCoComplete.BinaryCoproduct` — `ShapeCoComplete` ⟹ `BinaryCoproduct`
 ### `BinaryCoproductData`
 - `.toBinaryCoproduct` — `BinaryCoproductData` ⟹ `BinaryCoproduct`
 -/
@@ -87,12 +89,15 @@ noncomputable def data [h : BinaryProduct A B] : BinaryProductData A B :=
 noncomputable def unique (h₁ h₂ : BinaryProduct A B) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
-instance (priority := 100) ShapeComplete.instBinaryProduct
+instance (priority := 100) ShapeComplete.BinaryProduct
     [h : ShapeComplete (DiscreteCat Bool) C] : BinaryProduct A B where
   obj := (h.hasLimit (discreteFunctor (BinaryFamily A B))).obj
   rep := (h.hasLimit (discreteFunctor (BinaryFamily A B))).rep
 
 end BinaryProduct
+
+/-- `A` 和 `B` 的 binary product object -/
+def Prod.BinaryProduct [h : BinaryProduct A B] := h.obj
 
 /-- `BinaryProductData` ⟹ `BinaryProduct` -/
 @[reducible]
@@ -133,12 +138,15 @@ noncomputable def data [h : BinaryCoproduct A B] : BinaryCoproductData A B :=
 noncomputable def unique (h₁ h₂ : BinaryCoproduct A B) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
-instance (priority := 100) ShapeCoComplete.instBinaryCoproduct
+instance (priority := 100) ShapeCoComplete.BinaryCoproduct
     [h : ShapeCoComplete (DiscreteCat Bool) C] : BinaryCoproduct A B where
-  obj := (h.hascolimit (discreteFunctor (BinaryFamily A B))).obj
-  rep := (h.hascolimit (discreteFunctor (BinaryFamily A B))).rep
+  obj := (h.hasCoLimit (discreteFunctor (BinaryFamily A B))).obj
+  rep := (h.hasCoLimit (discreteFunctor (BinaryFamily A B))).rep
 
 end BinaryCoproduct
+
+/-- `A` 和 `B` 的 binary coproduct object -/
+def Prod.BinaryCoproduct [h : BinaryCoproduct A B] := h.obj
 
 /-- `BinaryCoproductData` ⟹ `BinaryCoproduct` -/
 @[reducible]

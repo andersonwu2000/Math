@@ -79,28 +79,28 @@ noncomputable
 def IsSplitMono
   [F.FullyFaithful] [F[f].IsSplitMono] : f.IsSplitMono where
   left_inv := F.preimage F[f].left_inv
-  inv_hom_id := F.map_injective (by simp [F.map_preimage_id])
+  inv_hom_id := F.map_injective (by simp)
 
 @[reducible]
 noncomputable
 def IsSplitEpi
   [F.FullyFaithful] [F[f].IsSplitEpi] : f.IsSplitEpi where
   right_inv := F.preimage F[f].right_inv
-  hom_inv_id := F.map_injective (by simp [F.map_preimage_id])
+  hom_inv_id := F.map_injective (by simp)
 
 @[reducible]
 noncomputable
 def IsIso [F.FullyFaithful] [F[f].IsIso] : f.IsIso where
   inv := F.preimage F[f]⁻¹
-  inv_hom_id := F.map_injective (by simp [F.map_preimage_id])
-  hom_inv_id := F.map_injective (by simp [F.map_preimage_id])
+  inv_hom_id := F.map_injective (by simp)
+  hom_inv_id := F.map_injective (by simp)
 
 noncomputable
 def Iso [F.FullyFaithful] (i : F[X] ≅ F[Y]) : X ≅ Y where
   hom := F.preimage i.hom
   inv := F.preimage i.inv
-  hom_inv_id := F.map_injective (by simp [F.map_preimage_id])
-  inv_hom_id := F.map_injective (by simp [F.map_preimage_id])
+  hom_inv_id := F.map_injective (by simp)
+  inv_hom_id := F.map_injective (by simp)
 
 /-- `F ○ G ≅ F ○ H → G ≅ H`（fully faithful） -/
 noncomputable
@@ -113,8 +113,8 @@ def NatIso [F.FullyFaithful] (α : F ○[Cat] G ≅[⟦B, D⟧] F ○[Cat] H) : 
             naturality f := F.map_injective (by
               simp only [Functor.map_comp, F.map_preimage_id]
               exact α.inv.naturality f) }
-  hom_inv_id := by ext b; apply F.map_injective; simp [F.map_preimage_id]
-  inv_hom_id := by ext b; apply F.map_injective; simp [F.map_preimage_id]
+  hom_inv_id := by ext b; apply F.map_injective; simp
+  inv_hom_id := by ext b; apply F.map_injective; simp
 
 end Reflect
 end CategoryTheory

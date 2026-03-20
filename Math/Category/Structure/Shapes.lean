@@ -114,7 +114,7 @@ def arrowFunctor (f : A ⟶[C] B) : WalkingArrowCat ⥤ C where
   map_comp h k := by
     cases h with
     | refl _ => aesop_cat
-    | arr => cases k with | refl _ => aesop_cat
+    | _ => cases k with | refl _ => aesop_cat
 
 -- ─── Walking Parallel Pair ────────────────────────────────────────────────────
 
@@ -226,8 +226,7 @@ def cospanFunctor (f : A ⟶[C] X) (g : B ⟶[C] X) : WalkingCospanCat ⥤ C whe
   map_comp h k := by
     cases h with
     | refl _ => aesop_cat
-    | inl => cases k with | refl _ => aesop_cat
-    | inr => cases k with | refl _ => aesop_cat
+    | _ => cases k with | refl _ => aesop_cat
 
 /-- Functor `WalkingSpanCat ⥤ C`，編碼 span `A ←f– X –g→ B` -/
 @[reducible]
@@ -243,7 +242,6 @@ def spanFunctor (f : X ⟶[C] A) (g : X ⟶[C] B) : WalkingSpanCat ⥤ C where
   map_comp h k := by
     cases h with
     | refl _ => aesop_cat
-    | fst => cases k with | refl _ => aesop_cat
-    | snd => cases k with | refl _ => aesop_cat
+    | _ => cases k with | refl _ => aesop_cat
 
 end CategoryTheory

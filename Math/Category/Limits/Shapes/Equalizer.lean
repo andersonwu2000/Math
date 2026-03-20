@@ -11,18 +11,20 @@ Equalizer / coequalizer：parallel pair 圖的 limit / colimit。
 - `CoEqualizer f g` — `CoLimit (parallelPairFunctor f g)`
 - `EqualizerData f g` — equalizer object `obj`、fork morphism `π`、universal `lift`
 - `CoEqualizerData f g` — coequalizer object `obj`、cofork morphism `ι`、universal `desc`
+- `Hom.Equalizer` — `f` 和 `g` 的 equalizer object
+- `Hom.CoEqualizer` — `f` 和 `g` 的 coequalizer object
 
 ## 定理
 ### `Equalizer`
 - `.data` — `Equalizer` ⟹ `EqualizerData`
 - `.unique` — equalizer 在 iso 下唯一
-- `ShapeComplete.instEqualizer` — `ShapeComplete` ⟹ `Equalizer`
+- `ShapeComplete.Equalizer` — `ShapeComplete` ⟹ `Equalizer`
 ### `EqualizerData`
 - `.toEqualizer` — `EqualizerData` ⟹ `Equalizer`
 ### `CoEqualizer`
 - `.data` — `CoEqualizer` ⟹ `CoEqualizerData`
 - `.unique` — coequalizer 在 iso 下唯一
-- `ShapeCoComplete.instCoEqualizer` — `ShapeCoComplete` ⟹ `CoEqualizer`
+- `ShapeCoComplete.CoEqualizer` — `ShapeCoComplete` ⟹ `CoEqualizer`
 ### `CoEqualizerData`
 - `.toCoEqualizer` — `CoEqualizerData` ⟹ `CoEqualizer`
 -/
@@ -86,20 +88,22 @@ noncomputable def data [h : Equalizer f g] : EqualizerData f g :=
         next => simpa using hk
         next =>
           have hnat := ld.cone.naturality WalkingParallelPairMor.left
-          simp only [Diagonal, Category.id_comp] at hnat
-          simp only [mkFork, ← hk, ← Category.assoc]
-          exact congrArg (· ○ k) hnat) }
+          simp only [Diagonal, Category.id_comp, mkFork] at hnat ⊢
+          grind) }
 
 /-- Equalizer 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : Equalizer f g) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
-instance (priority := 100) ShapeComplete.instEqualizer
+instance (priority := 100) ShapeComplete.Equalizer
     [h : ShapeComplete WalkingParallelPairCat C] : Equalizer f g where
   obj := (h.hasLimit (parallelPairFunctor f g)).obj
   rep := (h.hasLimit (parallelPairFunctor f g)).rep
 
 end Equalizer
+
+/-- `f` 和 `g` 的 equalizer object -/
+def Hom.Equalizer [h : Equalizer f g] := h.obj
 
 /-- `EqualizerData` ⟹ `Equalizer` -/
 @[reducible]
@@ -133,7 +137,7 @@ noncomputable def EqualizerData.toEqualizer (ed : EqualizerData f g) : Equalizer
 
 namespace CoEqualizer
 
-private def mkCofork (h : B ⟶ Z) (hh : h ○ f = h ○ g) :
+private def mkCoFork (h : B ⟶ Z) (hh : h ○ f = h ○ g) :
     parallelPairFunctor f g ⇒ Δ[Z] where
   app j    := match j with | .zero => h ○ f | .one => h
   naturality m := by
@@ -150,27 +154,30 @@ noncomputable def data [h : CoEqualizer f g] : CoEqualizerData f g :=
       have l := cd.cocone.naturality WalkingParallelPairMor.left
       have r := cd.cocone.naturality WalkingParallelPairMor.right
       simp at l r; exact l.trans r.symm
-    desc h hh := cd.desc (mkCofork f g h hh)
-    desc_ι h hh := by simpa using cd.desc_ι (mkCofork f g h hh) WalkingParallelPair.one
+    desc h hh := cd.desc (mkCoFork f g h hh)
+    desc_ι h hh := by simpa using cd.desc_ι (mkCoFork f g h hh) WalkingParallelPair.one
     desc_unique h hh k hk :=
-      cd.desc_unique (mkCofork f g h hh) k (by
+      cd.desc_unique (mkCoFork f g h hh) k (by
         intro j; cases j
         next =>
           have hnat := cd.cocone.naturality WalkingParallelPairMor.left
-          simp only [Diagonal, Category.comp_id, mkCofork] at hnat ⊢
-          rw [← hnat, ← Category.assoc]; congr 1
+          simp only [Diagonal, Category.comp_id, mkCoFork] at hnat ⊢
+          grind
         next => simpa using hk) }
 
 /-- CoEqualizer 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : CoEqualizer f g) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
-instance (priority := 100) ShapeCoComplete.instCoEqualizer
+instance (priority := 100) ShapeCoComplete.CoEqualizer
     [h : ShapeCoComplete WalkingParallelPairCat C] : CoEqualizer f g where
-  obj := (h.hascolimit (parallelPairFunctor f g)).obj
-  rep := (h.hascolimit (parallelPairFunctor f g)).rep
+  obj := (h.hasCoLimit (parallelPairFunctor f g)).obj
+  rep := (h.hasCoLimit (parallelPairFunctor f g)).rep
 
 end CoEqualizer
+
+/-- `f` 和 `g` 的 coequalizer object -/
+def Hom.CoEqualizer [h : CoEqualizer f g] := h.obj
 
 /-- `CoEqualizerData` ⟹ `CoEqualizer` -/
 @[reducible]

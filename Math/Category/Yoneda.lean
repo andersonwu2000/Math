@@ -56,7 +56,6 @@ def Equiv (X : C.obj) (F : Cᵒᵖ ⥤ Types) :
   (Hom[–, X] ⇒ F) ≅[Types] F[X] where
   hom α := α·X (𝟙 X)
   inv a := {app _ f := F[f] a}
-  inv_hom_id := by simp; rfl
 
 abbrev Evaluation : Cᵒᵖ × ⟦Cᵒᵖ, Types⟧ ⥤ Types where
   obj := fun (X, F) => F[X]
@@ -70,6 +69,7 @@ def Lemma :
   {app := fun (X, F) => (Equiv X.op F).hom}
   (fun (X, F) => inferInstance)
 
+@[simp, grind =, grind _=_]
 lemma map_eq_inv :
   Yoneda.map = (Equiv X Hom[–, Y]).inv := by
   ext; simp
@@ -92,7 +92,7 @@ end Yoneda
 def CoYoneda : Cᵒᵖ ⥤ ⟦C, Types⟧ where
   obj X := Hom[X, –]
   map f := Hom[f, –]
-  map_comp g f := by aesop_cat; ext; grind
+  map_comp g f := by ext; simp; grind
 
 namespace CoYoneda
 variable {C : Category}

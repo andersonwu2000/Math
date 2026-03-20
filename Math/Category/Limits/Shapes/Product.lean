@@ -16,13 +16,13 @@ Indexed product / coproduct：discrete 圖的 limit / colimit。
 ### `Product`
 - `.data` — `Product` ⟹ `ProductData`
 - `.unique` — product 在 iso 下唯一
-- `ShapeComplete.instProduct` — `ShapeComplete` ⟹ `Product`
+- `ShapeComplete.Product` — `ShapeComplete` ⟹ `Product`
 ### `ProductData`
 - `.toProduct` — `ProductData` ⟹ `Product`
 ### `CoProduct`
 - `.data` — `CoProduct` ⟹ `CoProductData`
 - `.unique` — coproduct 在 iso 下唯一
-- `ShapeCoComplete.instCoProduct` — `ShapeCoComplete` ⟹ `CoProduct`
+- `ShapeCoComplete.CoProduct` — `ShapeCoComplete` ⟹ `CoProduct`
 ### `CoProductData`
 - `.toCoProduct` — `CoProductData` ⟹ `CoProduct`
 -/
@@ -73,21 +73,25 @@ noncomputable def data [h : Product f] : ProductData f :=
 noncomputable def unique (h₁ h₂ : Product f) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
-instance (priority := 100) ShapeComplete.instProduct
+instance (priority := 100) ShapeComplete.Product
     [h : ShapeComplete (DiscreteCat α) C] : Product f where
   obj := (h.hasLimit (discreteFunctor f)).obj
   rep := (h.hasLimit (discreteFunctor f)).rep
 
 end Product
 
+/-- family `f` 的 product object -/
+def Function.Product [h : Product f] := h.obj
+notation "∏" f => Function.Product f
+
 /-- `ProductData` ⟹ `Product` -/
-@[reducible]
-noncomputable def ProductData.toProduct (pd : ProductData f) : Product f where
+instance ProductData.toProduct (pd : ProductData f) : Product f where
   obj := pd.obj
   rep := (LimitData.toLimit {
     obj  := pd.obj
-    cone := { app a := pd.π a
-              naturality h := by rcases h with ⟨rfl⟩; simp }
+    cone := show Δ[pd.obj] ⇒ discreteFunctor f from {
+      app a := pd.π a
+      naturality h := by rcases h with ⟨rfl⟩; simp }
     lift φ := pd.lift (fun a => φ·a)
     lift_π φ a := pd.lift_π _ a
     lift_unique φ k hk := pd.lift_unique _ k (fun a => hk a)
@@ -111,21 +115,25 @@ noncomputable def data [h : CoProduct f] : CoProductData f :=
 noncomputable def unique (h₁ h₂ : CoProduct f) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
-instance (priority := 100) ShapeCoComplete.instCoProduct
+instance (priority := 100) ShapeCoComplete.CoProduct
     [h : ShapeCoComplete (DiscreteCat α) C] : CoProduct f where
-  obj := (h.hascolimit (discreteFunctor f)).obj
-  rep := (h.hascolimit (discreteFunctor f)).rep
+  obj := (h.hasCoLimit (discreteFunctor f)).obj
+  rep := (h.hasCoLimit (discreteFunctor f)).rep
 
 end CoProduct
 
+/-- family `f` 的 coproduct object -/
+def Function.CoProduct [h : CoProduct f] := h.obj
+notation "⨿" f => Function.CoProduct f
+
 /-- `CoProductData` ⟹ `CoProduct` -/
-@[reducible]
-noncomputable def CoProductData.toCoProduct (cpd : CoProductData f) : CoProduct f where
+instance CoProductData.toCoProduct (cpd : CoProductData f) : CoProduct f where
   obj := cpd.obj
   rep := (CoLimitData.toCoLimit {
     obj    := cpd.obj
-    cocone := { app a := cpd.ι a
-                naturality h := by rcases h with ⟨rfl⟩; simp }
+    cocone := show discreteFunctor f ⇒ Δ[cpd.obj] from {
+      app a := cpd.ι a
+      naturality h := by rcases h with ⟨rfl⟩; simp }
     desc φ := cpd.desc (fun a => φ·a)
     desc_ι φ a := cpd.desc_ι _ a
     desc_unique φ k hk := cpd.desc_unique _ k (fun a => hk a)

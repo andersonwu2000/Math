@@ -133,7 +133,6 @@ instance IsSplitMono.IsMono [p : f.IsSplitMono] : f.IsMono where
 lemma IsSplitMono.left_uni [f.IsSplitMono] :
   f ○ h = f ○ k → h = k := by simp [IsMono.cancel]
 
--- @[simp, grind =]
 lemma IsSplitMono.cancel [f.IsSplitMono] :
   f ○ h = f ○ k ↔ h = k := by simp [IsMono.cancel]
 
@@ -162,7 +161,6 @@ instance IsSplitEpi.IsEpi [p : f.IsSplitEpi] : f.IsEpi where
 lemma IsSplitEpi.right_uni [f.IsSplitEpi] :
   h ○ f = k ○ f → h = k := by simp [IsEpi.cancel]
 
--- @[simp, grind =]
 lemma IsSplitEpi.cancel [f.IsSplitEpi] :
   h ○ f = k ○ f ↔ h = k := by simp [IsEpi.cancel]
 

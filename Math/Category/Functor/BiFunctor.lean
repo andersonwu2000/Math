@@ -14,6 +14,19 @@ Bifunctor 操作。
 ## 定理
 ### `BiFunctor`
 - `.interchange` / `.interchange'` — `F[𝟙, g] ○ F[f, 𝟙] = F[f, g]`
+
+## 記號
+| 記號 | 意義 |
+|---|---|
+| `F[X, Y]` / `F[f, g]` | bifunctor 作用於物件 / 態射 |
+| `F[X, –]` / `F[–, Y]` | 固定一側 |
+| `F[f, X]` / `F[X, f]` | 固定一側的態射 |
+| `F[f, –]` / `F[–, f]` | 固定一側的 natural transformation |
+| `F[G–, –]` / `F[–, G–]` / `F[G–, H–]` | 與 functor 合成 |
+| `F[G–, Y]` / `F[X, G–]` | 合成後固定 |
+| `F[G–, f]` / `F[f, G–]` | 合成後固定一側的 natural transformation |
+| `α·(X, –)` / `α·(–, X)` | natural transformation 固定一側 |
+| `α(X, –)` / `α(–, X)` | natural isomorphism 固定一側 |
 -/
 
 namespace CategoryTheory
@@ -129,7 +142,7 @@ lemma interchange (F : C × D ⥤ E)
     {X₁ X₂ : C.obj} {Y₁ Y₂ : D.obj}
     (f : X₁ ⟶ X₂) (g : Y₁ ⟶ Y₂) :
     F[𝟙X₂, g] ○ F[f.Prod (𝟙Y₁)] = F[f.Prod g] := by
-  rw [BiFunctor.comp]; simp
+  simp [BiFunctor.comp]
 
 /-- `F[f, 𝟙] ○ F[𝟙, g] = F[f, g]` -/
 @[simp, grind =]
@@ -137,7 +150,7 @@ lemma interchange' (F : C × D ⥤ E)
     {X₁ X₂ : C.obj} {Y₁ Y₂ : D.obj}
     (f : X₁ ⟶ X₂) (g : Y₁ ⟶ Y₂) :
     F[f, 𝟙Y₂] ○ F[(𝟙X₁).Prod g] = F[f.Prod g] := by
-  rw [BiFunctor.comp]; simp
+  simp [BiFunctor.comp]
 
 end NatTrans
 section NatIso

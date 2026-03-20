@@ -38,6 +38,7 @@ def preimage [F.Full] : (F[X] ⟶ F[Y]) → (X ⟶ Y) :=
   surjInv F.map_surjective
 
 /-- `F[F.preimage f] = f` -/
+@[simp]
 lemma map_preimage_id [F.Full] (f : F[X] ⟶ F[Y]) :
   F[F.preimage f] = f := (F.map_surjective f).choose_spec
 

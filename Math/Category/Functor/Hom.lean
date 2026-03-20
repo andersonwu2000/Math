@@ -55,14 +55,14 @@ def Hom.preserve_natiso_right (iso : F ≅ G) : Hom[–, F–] ≅ Hom[–, G–
   hom_inv_id := by ext X f; dsimp; grind
 
 
-private lemma right_hom_nat
+private lemma right_nat
     (iso : Hom[–, F–] ≅ Hom[–, G–]) (f : X ⟶[C] Y) :
     iso·(F[Y].op, Y) (𝟙) ○ F[f] = G[f] ○ iso·(F[X].op, X) (𝟙) := by
   have p := congrFun (iso.hom.naturality ((𝟙).Prod f)) (𝟙)
   have q := congrFun (iso.hom.naturality ((F[f]).Prod (𝟙))) (𝟙)
   simp_all
 
-private lemma left_inv_nat
+private lemma left_nat
     (iso : Hom[Fᵒᵖ–, –] ≅ Hom[Gᵒᵖ–, –]) (f : X ⟶[C] Y) :
     iso·(Y, F[Y]) (𝟙) ○ G[f] = F[f] ○ iso·(X, F[X]) (𝟙) := by
   have p := congrFun (iso.hom.naturality (f.Prod (𝟙))) (𝟙)
@@ -72,8 +72,8 @@ private lemma left_inv_nat
 
 /-- `Hom[Fᵒᵖ–, –] ≅ Hom[Gᵒᵖ–, –] → F ≅ G` -/
 def Hom.reflect_natiso_left (iso : Hom[Fᵒᵖ–, –] ≅ Hom[Gᵒᵖ–, –]) : F ≅ G where
-  hom := {app X := iso⁻¹·(X, G[X]) (𝟙), naturality := left_inv_nat iso.symm }
-  inv := {app X := iso·(X, F[X]) (𝟙),   naturality := left_inv_nat iso }
+  hom := {app X := iso⁻¹·(X, G[X]) (𝟙), naturality := left_nat iso.symm }
+  inv := {app X := iso·(X, F[X]) (𝟙),   naturality := left_nat iso }
   inv_hom_id := by
     ext X
     simpa using (congrFun (iso.inv.naturality ((𝟙).Prod (iso·(X, F[X]) (𝟙F[X])))) (𝟙)).symm
@@ -83,8 +83,8 @@ def Hom.reflect_natiso_left (iso : Hom[Fᵒᵖ–, –] ≅ Hom[Gᵒᵖ–, –]
 
 /-- `Hom[–, F–] ≅ Hom[–, G–] → F ≅ G` -/
 def Hom.reflect_natiso_right (iso : Hom[–, F–] ≅ Hom[–, G–]) : F ≅ G where
-  hom := {app X := iso·(F[X].op, X) (𝟙),   naturality := right_hom_nat iso }
-  inv := {app X := iso⁻¹·(G[X].op, X) (𝟙), naturality := right_hom_nat iso.symm }
+  hom := {app X := iso·(F[X].op, X) (𝟙),   naturality := right_nat iso }
+  inv := {app X := iso⁻¹·(G[X].op, X) (𝟙), naturality := right_nat iso.symm }
   inv_hom_id := by
     ext X
     simpa using (congrFun (iso.inv.naturality ((iso·(F[X].op, X) (𝟙F[X])).Prod (𝟙))) (𝟙)).symm

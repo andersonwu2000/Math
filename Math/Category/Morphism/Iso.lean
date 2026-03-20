@@ -73,10 +73,8 @@ variable {C : Category} {X Y : C.obj} (f : X ⟶ Y)
 /-- 可逆 morphism：`inv ○ f = 𝟙` 且 `f ○ inv = 𝟙` -/
 class IsIso where
   inv : Y ⟶ X
-  inv_hom_id : inv ○ f = 𝟙 := by
-    first | grind | simp_all
-  hom_inv_id : f ○ inv = 𝟙 := by
-    first | grind | simp_all
+  inv_hom_id : inv ○ f = 𝟙 := by aesop_cat
+  hom_inv_id : f ○ inv = 𝟙 := by aesop_cat
 
 attribute [simp, grind =] IsIso.hom_inv_id IsIso.inv_hom_id
 abbrev inv [f.IsIso] : Y ⟶ X := IsIso.inv f
@@ -94,6 +92,8 @@ instance id : (𝟙 X).IsIso where
 
 instance trans [f.IsIso] [g.IsIso] : (g ○ f).IsIso where
   inv := f⁻¹ ○ g⁻¹
+  inv_hom_id := by grind
+  hom_inv_id := by grind
 
 @[simp, grind =]
 lemma inv_id : (𝟙 X)⁻¹ = 𝟙 := rfl

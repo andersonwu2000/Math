@@ -104,8 +104,7 @@ private lemma map_η_inv_eq_ε (e : AdjointEquivalence F G) (Y : C.obj) :
   have hFηY_epi : (F[e.η.hom·Y]).IsEpi := inferInstance
   -- 兩者都是左逆：
   have h1 : F[e.η.inv·Y] ○ F[e.η.hom·Y] = 𝟙 := by
-    have h := NatIso.inv_hom_id_app e.η Y
-    simp only [← F.map_comp, h, Functor.map_id]
+    simp only [← F.map_comp, NatIso.inv_hom_id_app e.η Y, Functor.map_id]
   have h2 : e.ε.hom·F[Y] ○ F[e.η.hom·Y] = 𝟙 := e.ε_triangle Y
   exact hFηY_epi.left_uni (h1.trans h2.symm)
 
@@ -115,8 +114,7 @@ private lemma map_ε_inv_eq_η (e : AdjointEquivalence F G) (A : D.obj) :
   have hGεA_mono : (G[e.ε.hom·A]).IsMono := inferInstance
   -- 兩者都是右逆：
   have h1 : G[e.ε.hom·A] ○ G[e.ε.inv·A] = 𝟙 := by
-    have h := NatIso.hom_inv_id_app e.ε A
-    simp only [← G.map_comp, h, Functor.map_id]
+    simp only [← G.map_comp, NatIso.hom_inv_id_app e.ε A, Functor.map_id]
   have h2 : G[e.ε.hom·A] ○ e.η.hom·G[A] = 𝟙 := e.η_triangle A
   exact hGεA_mono.right_uni (h1.trans h2.symm)
 
@@ -139,107 +137,87 @@ instance fullyFaithful (e : AdjointEquivalence F G) :
 
 /-! ### 方向 (1) → (2) -/
 
-/-- 從 category equivalence 構造 adjoint equivalence。
-令 ε' = ρ。 -/
-def ofCatEquiv (e : CatEquiv C D) :
-    AdjointEquivalence e.F e.G := by
-  have hGρ (A : D.obj) : (e.G[e.ρ.hom·A]).IsIso := {
-    inv := e.G[e.ρ.inv·A]
-    inv_hom_id := by
-      have h := NatIso.inv_hom_id_app e.ρ A
-      rw [← e.G.map_comp, h, e.G.map_id]
-    hom_inv_id := by
-      have h := NatIso.hom_inv_id_app e.ρ A
-      rw [← e.G.map_comp, h, e.G.map_id]}
-  -- 修正的餘單位：ε'·A = ρ·A ○ F[η⁻¹·G[A]] ○ ρ⁻¹·F[G[A]]
-  let ε'_nat : e.F ○[Cat] e.G ⇒ 𝟙[Cat] D :=
-    { app := fun A => e.ρ.hom·A ○ e.F[e.η.inv·(e.G[A])] ○ e.ρ.inv·(e.F[e.G[A]])
-      naturality := fun {A B} f => by
-        simp only [Cat.eq_1, Function.comp_apply, id_eq]
-        have h1 := e.ρ.inv.naturality (e.F[e.G[f]])
-        have h2 := e.η.inv.naturality (e.G[f])
-        have h3 := e.ρ.hom.naturality f
-        simp only [Cat.eq_1, Function.comp_apply, id_eq] at h1 h2 h3
-        have h4 : e.F[e.η.inv·(e.G[B])] ○ e.F[e.G[e.F[e.G[f]]]] =
-                  e.F[e.G[f]] ○ e.F[e.η.inv·(e.G[A])] :=
-          (e.F.map_comp _ _).symm.trans ((congrArg e.F.map h2).trans (e.F.map_comp _ _))
-        grind }
-  have ε'_hom_inv : ∀ A : D.obj,
-      (e.ρ.hom·A ○ e.F[e.η.inv·(e.G[A])] ○ e.ρ.inv·(e.F[e.G[A]])) ○
-      (e.ρ.hom·(e.F[e.G[A]]) ○ e.F[e.η.hom·(e.G[A])] ○ e.ρ.inv·A) = 𝟙 := fun A =>
+/-- 修正的餘單位自然變換：ε'·A = ρ·A ○ F[η⁻¹·G[A]] ○ ρ⁻¹·F[G[A]] -/
+private def ofCatEquiv_ε'_nat (e : CatEquiv C D) : e.F ○[Cat] e.G ⇒ 𝟙[Cat] D where
+  app A := e.ρ.hom·A ○ e.F[e.η.inv·(e.G[A])] ○ e.ρ.inv·(e.F[e.G[A]])
+  naturality {A B} f := by
+    have h1 := e.ρ.inv.naturality (e.F[e.G[f]])
+    have h2 := e.η.inv.naturality (e.G[f])
+    have h3 := e.ρ.hom.naturality f
+    simp only [Cat.eq_1, Function.comp_apply, id_eq] at *
+    grind
+
+@[reducible]
+private def ofCatEquiv_ε'_iso (e : CatEquiv C D) (A : D.obj) :
+    ((ofCatEquiv_ε'_nat e)·A).IsIso where
+  inv := e.ρ.hom·(e.F[e.G[A]]) ○ e.F[e.η.hom·(e.G[A])] ○ e.ρ.inv·A
+  hom_inv_id :=
     Whisker.triple_cancel (NatIso.inv_hom_id_app e.ρ _)
       ((e.F.map_comp _ _).symm.trans
         ((congrArg e.F.map (NatIso.inv_hom_id_app e.η _)).trans (e.F.map_id _)))
       (NatIso.hom_inv_id_app e.ρ _)
-  have ε'_inv_hom : ∀ A : D.obj,
-      (e.ρ.hom·(e.F[e.G[A]]) ○ e.F[e.η.hom·(e.G[A])] ○ e.ρ.inv·A) ○
-      (e.ρ.hom·A ○ e.F[e.η.inv·(e.G[A])] ○ e.ρ.inv·(e.F[e.G[A]])) = 𝟙 := fun A =>
+  inv_hom_id :=
     Whisker.triple_cancel (NatIso.inv_hom_id_app e.ρ _)
       ((e.F.map_comp _ _).symm.trans
         ((congrArg e.F.map (NatIso.hom_inv_id_app e.η _)).trans (e.F.map_id _)))
       (NatIso.hom_inv_id_app e.ρ _)
-  let ε'_iso : ∀ A, (ε'_nat·A).IsIso := fun A => {
-    inv := e.ρ.hom·(e.F[e.G[A]]) ○ e.F[e.η.hom·(e.G[A])] ○ e.ρ.inv·A
-    hom_inv_id := ε'_hom_inv A
-    inv_hom_id := ε'_inv_hom A }
-  let ε' : e.F ○[Cat] e.G ≅ 𝟙[Cat] D := NatIso.ofComponents ε'_nat ε'_iso
-  -- 左 triangle identity 的分量版本
-  have left_tri : ∀ X : C.obj, ε'_nat·(e.F[X]) ○ e.F[e.η.hom·X] = 𝟙 := fun X => by
-    simp only [ε'_nat]
-    have h1 : e.ρ.inv·(e.F[e.G[e.F[X]]]) ○ e.F[e.η.hom·X] =
-              e.F[e.G[e.F[e.η.hom·X]]] ○ e.ρ.inv·(e.F[X]) := by
-      have := e.ρ.inv.naturality (e.F[e.η.hom·X])
-      simp only [Cat.eq_1, Function.comp_apply, id_eq] at this; exact this
-    have h2 : e.η.inv·(e.G[e.F[X]]) ○ e.G[e.F[e.η.hom·X]] = 𝟙 := by
-      have := e.η.inv.naturality (e.η.hom·X)
-      simp only [Cat.eq_1, Function.comp_apply, id_eq] at this
-      exact this.trans (NatIso.hom_inv_id_app e.η X)
-    simp only [Category.assoc]
-    -- 目標：ρ.hom·F[X] ○ (F[η.inv·G[F[X]]] ○ (ρ.inv·F[G[F[X]]] ○ F[η.hom·X])) = 𝟙
-    have h3 : e.F[e.η.inv·(e.G[e.F[X]])] ○ e.F[e.G[e.F[e.η.hom·X]]] =
-              e.F[𝟙] :=
-      (e.F.map_comp _ _).symm.trans (congrArg e.F.map h2)
-    -- 先用 h1 將 ρ.inv·F[G[F[X]]] ○ F[η.hom·X] 替換為 F[G[F[η.hom·X]]] ○ ρ.inv·F[X]
-    have h_h1 := congrArg (e.ρ.hom·(e.F[X]) ○ ·)
-                   (congrArg (e.F[e.η.inv·(e.G[e.F[X]])] ○ ·) h1)
-    have h4 : e.F[e.η.inv·(e.G[e.F[X]])] ○ (e.F[e.G[e.F[e.η.hom·X]]] ○ e.ρ.inv·(e.F[X])) =
-              e.ρ.inv·(e.F[X]) :=
-      (D.assoc _ _ _).symm.trans
-        ((congrArg (· ○ _) (h3.trans (e.F.map_id _))).trans (D.comp_id _))
-    exact h_h1.trans ((congrArg (e.ρ.hom·(e.F[X]) ○ ·) h4).trans (NatIso.hom_inv_id_app e.ρ _))
-  -- 右 triangle identity 的分量版本
-  have right_tri : ∀ A : D.obj, e.G[ε'_nat·A] ○ e.η.hom·(e.G[A]) = 𝟙 := fun A => by
-    -- 先證 F[r] = 𝟙（其中 r = G[ε'·A] ○ η·G[A]）
-    have hFr : e.F[e.G[ε'_nat·A] ○ e.η.hom·(e.G[A])] = 𝟙 := by
-      rw [e.F.map_comp]
-      have hnat : ε'_nat·A ○ e.F[e.G[ε'_nat·A]] = ε'_nat·A ○ ε'_nat·(e.F[e.G[A]]) := by
-        have := ε'_nat.naturality (ε'_nat·A)
-        simp only [Cat.eq_1, Function.comp_apply, id_eq] at this; exact this
-      have hmono : (ε'_nat·A).IsMono := by haveI := ε'_iso A; exact inferInstance
-      have hFGε : e.F[e.G[ε'_nat·A]] = ε'_nat·(e.F[e.G[A]]) := hmono.right_uni hnat
-      rw [hFGε]; exact left_tri (e.G[A])
-    -- η·G[A] 是 mono，由自然性得 η·G[A] ○ r = G[F[r]] ○ η·G[A] = η·G[A] ○ 𝟙
-    have hηGA_mono : (e.η.hom·(e.G[A])).IsMono := inferInstance
-    apply hηGA_mono.right_uni
-    have hnat2 := e.η.hom.naturality (e.G[ε'_nat·A] ○ e.η.hom·(e.G[A]))
-    simp only [Cat.eq_1, Function.comp_apply, id_eq] at hnat2
-    have gFr := (congrArg e.G.map hFr).trans (e.G.map_id _)
-    exact hnat2.trans ((congrArg (· ○ e.η.hom·(e.G[A])) gFr).trans
-      ((C.comp_id _).trans (C.id_comp _).symm))
+
+/-- 左 triangle identity 的分量版本：ε'·F[X] ○ F[η·X] = 𝟙 -/
+private lemma ofCatEquiv_left_tri (e : CatEquiv C D) (X : C.obj) :
+    (ofCatEquiv_ε'_nat e)·(e.F[X]) ○ e.F[e.η.hom·X] = 𝟙 := by
+  simp only [ofCatEquiv_ε'_nat]
+  have h1 : e.ρ.inv·(e.F[e.G[e.F[X]]]) ○ e.F[e.η.hom·X] =
+            e.F[e.G[e.F[e.η.hom·X]]] ○ e.ρ.inv·(e.F[X]) := by
+    simpa using e.ρ.inv.naturality (e.F[e.η.hom·X])
+  have h2 : e.η.inv·(e.G[e.F[X]]) ○ e.G[e.F[e.η.hom·X]] = 𝟙 := by
+    have := e.η.inv.naturality (e.η.hom·X)
+    simpa using this.trans (NatIso.hom_inv_id_app e.η X)
+  simp only [Category.assoc]
+  have h3 : e.F[e.η.inv·(e.G[e.F[X]])] ○ e.F[e.G[e.F[e.η.hom·X]]] =
+            e.F[𝟙] :=
+    (e.F.map_comp _ _).symm.trans (congrArg e.F.map h2)
+  have h_h1 := congrArg (e.ρ.hom·(e.F[X]) ○ ·)
+                 (congrArg (e.F[e.η.inv·(e.G[e.F[X]])] ○ ·) h1)
+  have h4 : e.F[e.η.inv·(e.G[e.F[X]])] ○ (e.F[e.G[e.F[e.η.hom·X]]] ○ e.ρ.inv·(e.F[X])) =
+            e.ρ.inv·(e.F[X]) :=
+    (D.assoc _ _ _).symm.trans
+      ((congrArg (· ○ _) (h3.trans (e.F.map_id _))).trans (D.comp_id _))
+  exact h_h1.trans ((congrArg (e.ρ.hom·(e.F[X]) ○ ·) h4).trans (NatIso.hom_inv_id_app e.ρ _))
+
+/-- 右 triangle identity 的分量版本：G[ε'·A] ○ η·G[A] = 𝟙 -/
+private lemma ofCatEquiv_right_tri (e : CatEquiv C D) (A : D.obj) :
+    e.G[(ofCatEquiv_ε'_nat e)·A] ○ e.η.hom·(e.G[A]) = 𝟙 := by
+  have hFr : e.F[e.G[(ofCatEquiv_ε'_nat e)·A] ○ e.η.hom·(e.G[A])] = 𝟙 := by
+    rw [e.F.map_comp]
+    have hnat : (ofCatEquiv_ε'_nat e)·A ○ e.F[e.G[(ofCatEquiv_ε'_nat e)·A]] =
+                (ofCatEquiv_ε'_nat e)·A ○ (ofCatEquiv_ε'_nat e)·(e.F[e.G[A]]) := by
+      simpa using (ofCatEquiv_ε'_nat e).naturality ((ofCatEquiv_ε'_nat e)·A)
+    have hmono : ((ofCatEquiv_ε'_nat e)·A).IsMono :=
+      haveI := ofCatEquiv_ε'_iso e A; inferInstance
+    have hFGε : e.F[e.G[(ofCatEquiv_ε'_nat e)·A]] =
+                (ofCatEquiv_ε'_nat e)·(e.F[e.G[A]]) := hmono.right_uni hnat
+    rw [hFGε]; exact ofCatEquiv_left_tri e (e.G[A])
+  have hηGA_mono : (e.η.hom·(e.G[A])).IsMono := inferInstance
+  apply hηGA_mono.right_uni
+  have hnat2 := e.η.hom.naturality (e.G[(ofCatEquiv_ε'_nat e)·A] ○ e.η.hom·(e.G[A]))
+  simp only [Cat.eq_1, Function.comp_apply, id_eq] at hnat2
+  aesop_cat
+
+/-- 從 category equivalence 構造 adjoint equivalence -/
+def ofCatEquiv (e : CatEquiv C D) :
+    AdjointEquivalence e.F e.G := by
+  let ε'_nat := ofCatEquiv_ε'_nat e
+  let ε' : e.F ○[Cat] e.G ≅ 𝟙[Cat] D :=
+    NatIso.ofComponents ε'_nat (ofCatEquiv_ε'_iso e)
   exact {
     η := e.η
     ε := ε'
     left_triangle := by
       ext X
-      simp only [Cat.eq_1, Function.comp_apply, id_eq,
-                 ε', NatIso.ofComponents, Category.id_comp, Category.comp_id]
-      exact (left_tri X).symm
+      simpa using (ofCatEquiv_left_tri e X).symm
     right_triangle := by
       ext A
-      simp only [Cat.eq_1, Function.comp_apply, id_eq,
-                 ε', NatIso.ofComponents, Category.id_comp, Category.comp_id,
-                 Functor.map_id]
-      exact (right_tri A).symm}
+      simpa using (ofCatEquiv_right_tri e A).symm}
 
 /-! ### 方向 (3) → (2) -/
 
@@ -268,8 +246,7 @@ noncomputable def make_right_adj : D ⥤ C where
     apply F.map_injective
     have hA : (right_adj_iso F A).hom ○[D]
         ((right_adj_iso F A).inv ○[D] (f ○[D] (right_adj_iso F C_).hom)) =
-        f ○[D] (right_adj_iso F C_).hom := by
-      simp only [← Category.assoc, (right_adj_iso F A).hom_inv_id, Category.comp_id]
+        f ○[D] (right_adj_iso F C_).hom := by grind
     simp only [Functor.map_comp, F.map_preimage_id, Category.assoc, hA]
 
 /-- 從全忠實 + 本質滿射構造伴隨等價 -/
@@ -300,9 +277,6 @@ noncomputable def ofFullyFaithful :
                  right_adj_obj, right_adj_iso, ← Category.assoc]
     naturality_right {X A B} f k := by
       apply F.map_injective
-      have hA : (right_adj_iso F A).hom ○[D] ((εi A).inv ○[D] f) = f := by
-        change (right_adj_iso F A).hom ○[D] ((right_adj_iso F A).inv ○[D] f) = f
-        simp only [← Category.assoc, (right_adj_iso F A).hom_inv_id, Category.comp_id]
       simp only [Functor.map_comp, F.map_preimage_id, G, make_right_adj,
                  right_adj_obj, Category.assoc]
       grind}
@@ -316,16 +290,7 @@ noncomputable def ofFullyFaithful :
       inv := (εi (F[X])).hom
       inv_hom_id := by rw [hval]; simp
       hom_inv_id := by rw [hval]; simp}
-    exact {
-      inv := F.preimage hFη.inv
-      inv_hom_id := by
-        apply F.map_injective
-        rw [F.map_comp, F.map_preimage_id, F.map_id]
-        exact hFη.inv_hom_id
-      hom_inv_id := by
-        apply F.map_injective
-        rw [F.map_comp, F.map_preimage_id, F.map_id]
-        exact hFη.hom_inv_id}
+    exact Reflect.IsIso F (φ.η·X)
   -- φ.ε·A = (εi A).hom 是同構
   have ε_comp_iso (A : D.obj) : (φ.ε·A).IsIso := by
     have hε : φ.ε·A = (εi A).hom := by

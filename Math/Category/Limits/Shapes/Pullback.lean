@@ -11,18 +11,20 @@ Pullback / pushout：cospan / span 圖的 limit / colimit。
 - `Pushout f g` — `CoLimit (spanFunctor f g)`
 - `PullbackData f g` — pullback object `obj`、projections `π₁` `π₂`、universal `lift`
 - `PushoutData f g` — pushout object `obj`、injections `ι₁` `ι₂`、universal `desc`
+- `Hom.Pullback` — `f` 和 `g` 的 pullback object
+- `Hom.Pushout` — `f` 和 `g` 的 pushout object
 
 ## 定理
 ### `Pullback`
 - `.data` — `Pullback` ⟹ `PullbackData`
 - `.unique` — pullback 在 iso 下唯一
-- `ShapeComplete.instPullback` — `ShapeComplete` ⟹ `Pullback`
+- `ShapeComplete.Pullback` — `ShapeComplete` ⟹ `Pullback`
 ### `PullbackData`
 - `.toPullback` — `PullbackData` ⟹ `Pullback`
 ### `Pushout`
 - `.data` — `Pushout` ⟹ `PushoutData`
 - `.unique` — pushout 在 iso 下唯一
-- `ShapeCoComplete.instPushout` — `ShapeCoComplete` ⟹ `Pushout`
+- `ShapeCoComplete.Pushout` — `ShapeCoComplete` ⟹ `Pushout`
 ### `PushoutData`
 - `.toPushout` — `PushoutData` ⟹ `Pushout`
 -/
@@ -102,12 +104,15 @@ noncomputable def data [h : Pullback f g] : PullbackData f g :=
 noncomputable def unique (h₁ h₂ : Pullback f g) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
-instance (priority := 100) ShapeComplete.instPullback
+instance (priority := 100) ShapeComplete.Pullback
     [h : ShapeComplete WalkingCospanCat C] : Pullback f g where
   obj := (h.hasLimit (cospanFunctor f g)).obj
   rep := (h.hasLimit (cospanFunctor f g)).rep
 
 end Pullback
+
+/-- `f` 和 `g` 的 pullback object -/
+def Hom.Pullback [h : Pullback f g] := h.obj
 
 /-- `PullbackData` ⟹ `Pullback` -/
 @[reducible]
@@ -131,9 +136,9 @@ noncomputable def PullbackData.toPullback (pd : PullbackData f g) : Pullback f g
       next => -- bot
         rw [Category.assoc, pd.lift_π₁]
         have := φ.naturality WalkingCospanMor.inl
-        simp at this; exact this.symm
-      next => simpa using pd.lift_π₁ _ _ _
-      next => simpa using pd.lift_π₂ _ _ _
+        simpa using this.symm
+      next => exact pd.lift_π₁ _ _ _
+      next => exact pd.lift_π₂ _ _ _
     lift_unique φ k hk :=
       pd.lift_unique _ _ _ k
         (by simpa using hk WalkingCospan.left)
@@ -182,12 +187,15 @@ noncomputable def data [h : Pushout f g] : PushoutData f g :=
 noncomputable def unique (h₁ h₂ : Pushout f g) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
-instance (priority := 100) ShapeCoComplete.instPushout
+instance (priority := 100) ShapeCoComplete.Pushout
     [h : ShapeCoComplete WalkingSpanCat C] : Pushout f g where
-  obj := (h.hascolimit (spanFunctor f g)).obj
-  rep := (h.hascolimit (spanFunctor f g)).rep
+  obj := (h.hasCoLimit (spanFunctor f g)).obj
+  rep := (h.hasCoLimit (spanFunctor f g)).rep
 
 end Pushout
+
+/-- `f` 和 `g` 的 pushout object -/
+def Hom.Pushout {f : X ⟶[C] A} {g : X ⟶[C] B} [h : Pushout f g] := h.obj
 
 /-- `PushoutData` ⟹ `Pushout` -/
 @[reducible]

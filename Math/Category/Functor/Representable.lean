@@ -23,6 +23,8 @@ Representable / corepresentable functor。
 - `.unique` — representing object 在 iso 下唯一
 ### `CoRepresentableData`
 - `.toCoRepresentable` — `CoRepresentableData` ⟹ `CoRepresentable`
+### `Types`
+- `Representable (𝟙[Cat] Types)` — `Hom[Types.Terminal, –] ≅ 𝟙 Types`
 -/
 
 namespace CategoryTheory
@@ -90,7 +92,7 @@ def RepresentableData.toRepresentable
     hom := { app A f := F[f] rd.element }
     inv := { app A a := rd.factor a
              naturality g := by
-               ext a; simp only [Types]; symm
+               ext a; symm
                apply rd.factor_unique
                simp [Hom, rd.factorization] }
     hom_inv_id := by
@@ -134,7 +136,7 @@ def CoRepresentableData.toCoRepresentable
   rep := {
     hom := { app A a := rd.factor a
              naturality g := by
-               ext a; simp only [Types]; symm
+               ext a; symm
                apply rd.factor_unique
                simp [Hom, rd.factorization] }
     inv := { app A f := F[f] rd.element }
@@ -144,5 +146,15 @@ def CoRepresentableData.toCoRepresentable
     inv_hom_id := by
       ext A a; simp only [Types]
       exact rd.factorization a }
+
+/-- `Hom[Types.Terminal, –] ≅ 𝟙 Types`：PUnit represents the identity functor -/
+instance : Representable (𝟙[Cat] Types) :=
+  RepresentableData.toRepresentable {
+    obj := Types.Terminal
+    element := PUnit.unit
+    factor a := fun _ => a
+    factorization _ := rfl
+    factor_unique _ f hf := by funext ⟨⟩; exact hf
+  }
 
 end CategoryTheory

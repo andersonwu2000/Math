@@ -72,9 +72,7 @@ noncomputable def Limit.data [Limit F] : LimitData F where
   obj      := Limit.universal.data.obj
   cone     := Limit.universal.data.morphism
   lift φ   := Limit.universal.data.factor φ
-  lift_π φ j := by
-    have := NatTrans.congr_app (Limit.universal.data.factorization φ) j
-    simp at this; exact this.symm
+  lift_π φ j := by simpa using (NatTrans.congr_app (Limit.universal.data.factorization φ) j).symm
   lift_unique φ k hk :=
     Limit.universal.data.factor_unique φ k (by ext j; simpa using (hk j).symm)
 
@@ -86,7 +84,7 @@ instance LimitData.toLimit {F : J ⥤ C} (l : LimitData F) : Limit F :=
     factor          := l.lift
     factorization φ := by ext j; simpa using (l.lift_π φ j).symm
     factor_unique φ k hk := l.lift_unique φ k fun j => by
-      have := NatTrans.congr_app hk j; simp at this; exact this.symm
+      simpa using (NatTrans.congr_app hk j).symm
   }
   { obj := u.obj, rep := u.rep }
 
@@ -110,9 +108,7 @@ noncomputable def CoLimit.data [CoLimit F] : CoLimitData F where
   obj    := CoLimit.universal.data.obj
   cocone := CoLimit.universal.data.morphism
   desc φ := CoLimit.universal.data.factor φ
-  desc_ι φ j := by
-    have := NatTrans.congr_app (CoLimit.universal.data.factorization φ) j
-    simp at this; exact this.symm
+  desc_ι φ j := by simpa using (NatTrans.congr_app (CoLimit.universal.data.factorization φ) j).symm
   desc_unique φ k hk :=
     CoLimit.universal.data.factor_unique φ k (by ext j; simpa using (hk j).symm)
 
@@ -124,7 +120,7 @@ instance CoLimitData.toCoLimit {F : J ⥤ C} (l : CoLimitData F) : CoLimit F :=
     factor          := l.desc
     factorization φ := by ext j; simpa using (l.desc_ι φ j).symm
     factor_unique φ k hk := l.desc_unique φ k fun j => by
-      have := NatTrans.congr_app hk j; simp at this; exact this.symm
+      simpa using (NatTrans.congr_app hk j).symm
   }
   { obj := u.obj, rep := u.rep }
 

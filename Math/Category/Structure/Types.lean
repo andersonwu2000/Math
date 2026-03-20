@@ -8,6 +8,7 @@ Types category 與 Hom bifunctor。
 
 ## 定義
 - `Types` — type 為 object、函數為 morphism 的 category
+- `Types.Terminal` / `Types.Initial` — Types 的 terminal / initial object（`PUnit` / `PEmpty`）
 - `Hom` — Hom bifunctor `Cᵒᵖ × C ⥤ Types`
 
 ## 定理
@@ -36,7 +37,15 @@ def Hom : Cᵒᵖ × C ⥤ Types where
   obj X := X.1 ⟶[C] X.2
   map f h := f.2 ○ h ○ f.1.op
 
+-- ─── Types ──────────────────────────────────────────────────────────────────
+
 namespace Types
+
+/-- Types 的 terminal object -/
+abbrev Terminal : Types.obj := PUnit
+
+/-- Types 的 initial object -/
+abbrev Initial : Types.obj := PEmpty
 
 @[ext]
 lemma ext
@@ -136,9 +145,11 @@ instance bijection_to_iso (p : Bijective f) : f.IsIso where
 lemma Iso.injective [p : f.IsIso] : f x = f y → x = y := Mono.injective
 lemma Iso.surjective [p : f.IsIso] (y : Y) : ∃ x : X, f x = y := Epi.surjective y
 
+@[simp]
 lemma Iso.inv_hom_id [p : f.IsIso] : f⁻¹ (f x) = x := by
   simpa using congrFun p.inv_hom_id x
 
+@[simp]
 lemma Iso.hom_inv_id [p : f.IsIso] : f (f⁻¹ y) = y := by
   simpa using congrFun p.hom_inv_id y
 
@@ -185,13 +196,11 @@ lemma inv_hom_id_app_apply :
   α.hom·X (α.inv·X x) = x :=
   congr_fun (α.hom_inv_id_app X) x
 
-@[simp]
 lemma eq_symm_apply {x : F[X]} :
   x = α.inv·X y ↔ α.hom·X x = y := by aesop_cat
 
-@[simp]
 lemma symm_eq_apply {x : F[X]} :
-  x = α.inv·X y ↔ y = α.hom·X x := by aesop_cat
+  α.inv·X y = x ↔ y = α.hom·X x := by aesop_cat
 
 end NatIso
 end CategoryTheory
