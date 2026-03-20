@@ -75,9 +75,9 @@ private def mkCone (π₁ : Z ⟶ A) (π₂ : Z ⟶ B) (hc : f ○ π₁ = g ○
     | .inr    => simpa using hc
 
 /-- `Pullback` ⟹ `PullbackData` -/
-noncomputable def data (pb : Pullback f g) : PullbackData f g :=
-  let ld := Limit.data (⟨pb.lim, pb.universal⟩ : Limit _)
-  { obj  := pb.lim
+noncomputable def data [h : Pullback f g] : PullbackData f g :=
+  let ld := Limit.data
+  { obj  := h.obj
     π₁   := ld.cone·WalkingCospan.left
     π₂   := ld.cone·WalkingCospan.right
     cond := by
@@ -93,26 +93,27 @@ noncomputable def data (pb : Pullback f g) : PullbackData f g :=
         next => -- bot
           have hnat := ld.cone.naturality WalkingCospanMor.inl
           simp only [Diagonal, Category.id_comp] at hnat
-          rw [hnat, Category.assoc, hk₁]; simp [mkCone]
+          simp only [mkCone, ← hk₁, ← Category.assoc]
+          exact congrArg (· ○ k) hnat
         next => simpa using hk₁
         next => simpa using hk₂) }
 
 /-- Pullback 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Pullback f g) : h₁.lim ≅ h₂.lim :=
-  CoUniversal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : Pullback f g) : h₁.obj ≅ h₂.obj :=
+  Limit.unique h₁.toLimit h₂.toLimit
 
 instance (priority := 100) ShapeComplete.instPullback
     [h : ShapeComplete WalkingCospanCat C] : Pullback f g where
-  lim := (h.hasLimit (cospanFunctor f g)).lim
-  universal := (h.hasLimit (cospanFunctor f g)).universal
+  obj := (h.hasLimit (cospanFunctor f g)).obj
+  rep := (h.hasLimit (cospanFunctor f g)).rep
 
 end Pullback
 
 /-- `PullbackData` ⟹ `Pullback` -/
 @[reducible]
 noncomputable def PullbackData.toPullback (pd : PullbackData f g) : Pullback f g where
-  lim := pd.obj
-  universal := (LimitData.toLimit {
+  obj := pd.obj
+  rep := (LimitData.toLimit {
     obj  := pd.obj
     cone := show Δ[pd.obj] ⇒ cospanFunctor f g from {
       app j := match j with | .left => pd.π₁ | .right => pd.π₂ | .bot => f ○ pd.π₁
@@ -137,7 +138,7 @@ noncomputable def PullbackData.toPullback (pd : PullbackData f g) : Pullback f g
       pd.lift_unique _ _ _ k
         (by simpa using hk WalkingCospan.left)
         (by simpa using hk WalkingCospan.right)
-  }).universal
+  }).rep
 
 -- ─── Pushout ─────────────────────────────────────────────────────────────────
 
@@ -155,9 +156,9 @@ private def mkCocone (ι₁ : A ⟶ Z) (ι₂ : B ⟶ Z) (hc : ι₁ ○ f = ι�
     | .snd    => simpa using hc.symm
 
 /-- `Pushout` ⟹ `PushoutData` -/
-noncomputable def data (po : Pushout f g) : PushoutData f g :=
-  let cd := CoLimit.data (⟨po.colim, po.universal⟩ : CoLimit _)
-  { obj  := po.colim
+noncomputable def data [h : Pushout f g] : PushoutData f g :=
+  let cd := CoLimit.data
+  { obj  := h.obj
     ι₁   := cd.cocone·WalkingSpan.left
     ι₂   := cd.cocone·WalkingSpan.right
     cond := by
@@ -172,19 +173,19 @@ noncomputable def data (po : Pushout f g) : PushoutData f g :=
         intro j; cases j
         next => -- top
           have hnat := cd.cocone.naturality WalkingSpanMor.fst
-          simp only [Diagonal, Category.comp_id] at hnat
-          rw [← hnat, ← Category.assoc, hk₁]; simp [mkCocone]
+          simp only [Diagonal, Category.comp_id, mkCocone] at hnat ⊢
+          rw [← hnat, ← Category.assoc]; congr 1
         next => simpa using hk₁
         next => simpa using hk₂) }
 
 /-- Pushout 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Pushout f g) : h₁.colim ≅ h₂.colim :=
-  Universal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : Pushout f g) : h₁.obj ≅ h₂.obj :=
+  CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
 instance (priority := 100) ShapeCoComplete.instPushout
     [h : ShapeCoComplete WalkingSpanCat C] : Pushout f g where
-  colim := (h.hascolimit (spanFunctor f g)).colim
-  universal := (h.hascolimit (spanFunctor f g)).universal
+  obj := (h.hascolimit (spanFunctor f g)).obj
+  rep := (h.hascolimit (spanFunctor f g)).rep
 
 end Pushout
 
@@ -192,8 +193,8 @@ end Pushout
 @[reducible]
 noncomputable def PushoutData.toPushout {f : X ⟶[C] A} {g : X ⟶[C] B}
     (pod : PushoutData f g) : Pushout f g where
-  colim := pod.obj
-  universal := (CoLimitData.toCoLimit {
+  obj := pod.obj
+  rep := (CoLimitData.toCoLimit {
     obj    := pod.obj
     cocone := show spanFunctor f g ⇒ Δ[pod.obj] from {
       app j := match j with | .top => pod.ι₁ ○ f | .left => pod.ι₁ | .right => pod.ι₂
@@ -218,6 +219,6 @@ noncomputable def PushoutData.toPushout {f : X ⟶[C] A} {g : X ⟶[C] B}
       pod.desc_unique _ _ _ k
         (by simpa using hk WalkingSpan.left)
         (by simpa using hk WalkingSpan.right)
-  }).universal
+  }).rep
 
 end CategoryTheory

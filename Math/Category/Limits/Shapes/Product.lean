@@ -60,9 +60,9 @@ structure CoProductData where
 namespace Product
 
 /-- `Product` ⟹ `ProductData` -/
-noncomputable def data (h : Product f) : ProductData f :=
-  let ld := Limit.data (⟨h.lim, h.universal⟩ : Limit _)
-  { obj           := h.lim
+noncomputable def data [h : Product f] : ProductData f :=
+  let ld := Limit.data
+  { obj           := h.obj
     π a           := ld.cone·a
     lift g        := ld.lift { app a := g a
                                naturality h := by rcases h with ⟨rfl⟩; simp }
@@ -70,37 +70,37 @@ noncomputable def data (h : Product f) : ProductData f :=
     lift_unique g k hk := ld.lift_unique _ k (fun a => hk a) }
 
 /-- Product 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Product f) : h₁.lim ≅ h₂.lim :=
-  CoUniversal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : Product f) : h₁.obj ≅ h₂.obj :=
+  Limit.unique h₁.toLimit h₂.toLimit
 
 instance (priority := 100) ShapeComplete.instProduct
     [h : ShapeComplete (DiscreteCat α) C] : Product f where
-  lim := (h.hasLimit (discreteFunctor f)).lim
-  universal := (h.hasLimit (discreteFunctor f)).universal
+  obj := (h.hasLimit (discreteFunctor f)).obj
+  rep := (h.hasLimit (discreteFunctor f)).rep
 
 end Product
 
 /-- `ProductData` ⟹ `Product` -/
 @[reducible]
 noncomputable def ProductData.toProduct (pd : ProductData f) : Product f where
-  lim := pd.obj
-  universal := (LimitData.toLimit {
+  obj := pd.obj
+  rep := (LimitData.toLimit {
     obj  := pd.obj
     cone := { app a := pd.π a
               naturality h := by rcases h with ⟨rfl⟩; simp }
     lift φ := pd.lift (fun a => φ·a)
     lift_π φ a := pd.lift_π _ a
     lift_unique φ k hk := pd.lift_unique _ k (fun a => hk a)
-  }).universal
+  }).rep
 
 -- ─── CoProduct ────────────────────────────────────────────────────────────────
 
 namespace CoProduct
 
 /-- `CoProduct` ⟹ `CoProductData` -/
-noncomputable def data (h : CoProduct f) : CoProductData f :=
-  let cd := CoLimit.data (⟨h.colim, h.universal⟩ : CoLimit _)
-  { obj            := h.colim
+noncomputable def data [h : CoProduct f] : CoProductData f :=
+  let cd := CoLimit.data
+  { obj            := h.obj
     ι a            := cd.cocone·a
     desc g         := cd.desc { app a := g a
                                 naturality h := by rcases h with ⟨rfl⟩; simp }
@@ -108,27 +108,27 @@ noncomputable def data (h : CoProduct f) : CoProductData f :=
     desc_unique g k hk := cd.desc_unique _ k (fun a => hk a) }
 
 /-- Coproduct 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : CoProduct f) : h₁.colim ≅ h₂.colim :=
-  Universal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : CoProduct f) : h₁.obj ≅ h₂.obj :=
+  CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
 instance (priority := 100) ShapeCoComplete.instCoProduct
     [h : ShapeCoComplete (DiscreteCat α) C] : CoProduct f where
-  colim := (h.hascolimit (discreteFunctor f)).colim
-  universal := (h.hascolimit (discreteFunctor f)).universal
+  obj := (h.hascolimit (discreteFunctor f)).obj
+  rep := (h.hascolimit (discreteFunctor f)).rep
 
 end CoProduct
 
 /-- `CoProductData` ⟹ `CoProduct` -/
 @[reducible]
 noncomputable def CoProductData.toCoProduct (cpd : CoProductData f) : CoProduct f where
-  colim := cpd.obj
-  universal := (CoLimitData.toCoLimit {
+  obj := cpd.obj
+  rep := (CoLimitData.toCoLimit {
     obj    := cpd.obj
     cocone := { app a := cpd.ι a
                 naturality h := by rcases h with ⟨rfl⟩; simp }
     desc φ := cpd.desc (fun a => φ·a)
     desc_ι φ a := cpd.desc_ι _ a
     desc_unique φ k hk := cpd.desc_unique _ k (fun a => hk a)
-  }).universal
+  }).rep
 
 end CategoryTheory

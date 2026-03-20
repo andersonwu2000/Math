@@ -37,7 +37,7 @@ lake update             # 更新相依套件（修改 lake-manifest.json 後執�
 |---|---|
 | `Category/Basic.lean` | `Category`、opposite、Whisker |
 | `Category/Tactic/` | 自訂策略 `aesop_cat` |
-| `Category/Functor/` | `Functor`、`Cat`、Hom 函子、常數函子、雙函子、fully faithful、essentially surjective |
+| `Category/Functor/` | `Functor`、`Cat`、Hom 函子、常數函子、雙函子、fully faithful、essentially surjective、representable |
 | `Category/NatTrans/` | 自然變換、自然同構、水平合成 |
 | `Category/Morphism/` | mono/epi、iso、preserve/reflect |
 | `Category/Structure/` | 函子範疇、積範疇、`Types`、index category shapes |
@@ -105,6 +105,18 @@ lake update             # 更新相依套件（修改 lake-manifest.json 後執�
 - 例外 1：`Is` + 對偶 typeclass → `Is` + `Co` + rest（如 `IsCoUniversal`）
 - 例外 2：`co` 是術語本身的一部分時保持原寫法（如 `WalkingCospan`——cospan 是數學名詞）
 - 例外 3：對偶概念有獨立名稱時不加前綴（如 `Mono` 的對偶是 `Epi`，不是 `CoMono`）
+
+### 「UniversalProperty 相關 class」的欄位命名
+
+斷言「存在某物件滿足某性質」的 class 統一使用 `obj` / `rep`：
+
+| 欄位 | 意義 | 範例 |
+|---|---|---|
+| `obj` | 存在的物件 | `Representable.obj`、`Limit.obj`、`Universal.obj` |
+| `rep` | 表示該物件的 iso | `Representable.rep`、`Limit.rep`、`Universal.rep` |
+
+- 對應的 Data structure 也使用 `obj` 作為 object 欄位名稱
+- 適用範圍：`Representable`、`CoRepresentable`、`Universal`、`CoUniversal`、`Limit`、`CoLimit`、以及未來的 concrete shape class
 
 ### 複合命名模式
 
@@ -183,6 +195,51 @@ end NamespaceName
 
 ---
 
+## Class / Instance 慣例
+
+### 參數風格
+
+| 情境 | 風格 | 範例 |
+|---|---|---|
+| 查詢唯一 instance | `[h : Foo]` 或 `[Foo]` | `Limit.data [Limit F]`、`Representable.data [h : Representable F]` |
+| 操作多個 instance 或變換 | `(u : Foo)` | `Limit.unique (h₁ h₂ : Limit F)` |
+| 返回 class type 的 def | **必須** `@[reducible]` | `LimitData.toLimit`、`Universal.ofIso` |
+| 自動推導 instance | `instance` | `Limit.universal [Limit F] : CoUniversal Δ F` |
+
+### 層級委託（instance chain）
+
+更具體的 class 應提供 instance 到更一般的 class：
+
+```
+Limit F  ──instance──▸  CoUniversal Δ F  ──instance──▸  CoRepresentable Hom[Fᵒᵖ–, F]
+CoLimit F  ──instance──▸  Universal Δ F  ──instance──▸  Representable Hom[X, G–]
+```
+
+這讓 `Limit` 自動繼承 `CoUniversal` 和 `CoRepresentable` 的所有 API（`data`、`unique` 等）。
+
+### Hom 記號的 elaboration
+
+`Hom[X, G–]` 等複合記號在 instance / def 中可能需要明確的 implicit category 參數：
+
+```lean
+-- ✗ 可能無法 elaborate
+def foo (h : Universal G X) : Representable Hom[X, G–] := ...
+
+-- ✓ 加上明確的 category 參數
+instance foo {G : D ⥤ C} {X : C.obj}
+    [h : Universal G X] : Representable Hom[X, G–] := ...
+```
+
+### 原版 / 對偶對稱
+
+對偶 pair **必須**具備平行的結構（相同的欄位名稱、相同的 API、相同的證明風格）：
+- `Representable` / `CoRepresentable`
+- `Universal` / `CoUniversal`
+- `Limit` / `CoLimit`
+- 各 Shapes（`Product` / `CoProduct`、`Equalizer` / `CoEqualizer` 等）
+
+---
+
 ## 證明風格
 
 - 優先使用 term-mode 證明（如 `congrArg`、`congrFun`、`funext`）
@@ -191,6 +248,7 @@ end NamespaceName
 - 避免冗長的 tactic chain——若超過 5 行，考慮提取輔助 lemma
 - `aesop_cat` 僅用於 structure 欄位的預設證明
 - **禁止**將多行壓縮成一行當成簡化證明的手段
+- 證明卡住時，用 `fail "stop"` 查看 goal state，而非盲目嘗試不同 tactic
 
 ---
 
@@ -199,3 +257,4 @@ end NamespaceName
 - 注意記憶體用量，盡力**避免記憶體洩漏**
 - 修改程式碼後**必須**確保零警告（`lake build` 無 warning）
 - 修改任何公開宣告的名稱後，**必須**同步更新該檔案的模組標頭
+- 返回 class type 的 `def` **必須**加 `@[reducible]`（否則 Lean 會報錯）

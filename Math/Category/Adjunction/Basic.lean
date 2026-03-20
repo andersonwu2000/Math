@@ -279,15 +279,15 @@ end Units
 section UniversalProperty
 
 /-- 從 universal property 族構造左 adjoint -/
-abbrev Universal.left_adjoint {G : D ⥤ C} {F : C.obj → D.obj}
-  (p : ∀ X, Universal G X (F X)) : C ⥤ D where
-  obj := F
-  map {X Y} f := (CoYoneda.Equiv (F Y) Hom[F X, –]).hom
-    ((p X).inv ○ Hom[f, G–] ○ (p Y).hom)
+abbrev Universal.left_adjoint {G : D ⥤ C}
+    (p : ∀ X, Universal G X) : C ⥤ D where
+  obj X := (p X).obj
+  map {X Y} f := (CoYoneda.Equiv ((p Y).obj) Hom[(p X).obj, –]).hom
+    ((p X).rep.inv ○ Hom[f, G–] ○ (p Y).rep.hom)
   map_comp {Y Z X} g f := by
     have q := congrFun
-      (CoYoneda.Equiv (F Y) Hom[F X, –]).inv_hom_id
-      ((p X).inv ○ Hom[f, G–] ○ (p Y).hom)
+      (CoYoneda.Equiv ((p Y).obj) Hom[(p X).obj, –]).inv_hom_id
+      ((p X).rep.inv ○ Hom[f, G–] ○ (p Y).rep.hom)
     simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, CoYoneda.Equiv, Category.id_comp,
       Functor.map_id, Category.comp_id, Function.comp_def, id_eq,
       NatTrans.mk.injEq] at q
@@ -295,15 +295,15 @@ abbrev Universal.left_adjoint {G : D ⥤ C} {F : C.obj → D.obj}
     simp_all
 
 /-- 從 couniversal property 族構造右 adjoint -/
-abbrev CoUniversal.right_adjoint {F : C ⥤ D} {G : D.obj → C.obj}
-  (p : ∀ A, CoUniversal F A (G A)) : D ⥤ C where
-  obj := G
-  map {X Y} f := (Yoneda.Equiv (G X) Hom[–, G Y]).hom
-    ((p Y).hom ○ Hom[Fᵒᵖ–, f] ○ (p X).inv)
+abbrev CoUniversal.right_adjoint {F : C ⥤ D}
+    (p : ∀ A, CoUniversal F A) : D ⥤ C where
+  obj A := (p A).obj
+  map {X Y} f := (Yoneda.Equiv ((p X).obj) Hom[–, (p Y).obj]).hom
+    ((p Y).rep.hom ○ Hom[Fᵒᵖ–, f] ○ (p X).rep.inv)
   map_comp {Y Z X} g f := by
     have q := congrFun
-      (Yoneda.Equiv (G Y) Hom[–, G Z]).inv_hom_id
-      ((p Z).hom ○ Hom[Fᵒᵖ–, g] ○ (p Y).inv)
+      (Yoneda.Equiv ((p Y).obj) Hom[–, (p Z).obj]).inv_hom_id
+      ((p Z).rep.hom ○ Hom[Fᵒᵖ–, g] ○ (p Y).rep.inv)
     simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, Yoneda.Equiv, Category.comp_id,
       Functor.map_id, Category.id_comp, Function.comp_def, id_eq,
       NatTrans.mk.injEq] at q
@@ -311,50 +311,56 @@ abbrev CoUniversal.right_adjoint {F : C ⥤ D} {G : D.obj → C.obj}
     simp_all
 
 /-- `left_adjoint p ⊣ G` -/
-def Adjunction.ofUniversal (G : D ⥤ C) (F : C.obj → D.obj)
-  (p : ∀ X, Universal G X (F X)) : Universal.left_adjoint p ⊣ G :=
+def Adjunction.ofUniversal (G : D ⥤ C)
+  (p : ∀ X, Universal G X) : Universal.left_adjoint p ⊣ G :=
   NatIso.ofComponents
-    ⟨fun (X, A) => (p X).hom·A, by
+    ⟨fun (X, A) => (p X).rep.hom·A, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := (Universal.data (p X)).factorization ((p X)·A h)
-      have q₁ := congrFun ((p Y).hom.naturality (g ○ h)) (Universal.left_adjoint p)[f]
-      simp [Universal.data] at q₀
-      simp_all⟩
-    fun (X, A) => (p X).IsIso A
+      have q₀ := Universal.data.factorization (Universal.rep.hom·A h)
+      have q₁ := congrFun (Universal.rep.hom.naturality (g ○ h)) (Universal.left_adjoint p)[f]
+      simp [Universal.data] at q₀ q₁
+      simp [q₁]
+      grind⟩
+    fun (X, A) => (p X).rep.IsIso A
 
 /-- `F ⊣ right_adjoint p` -/
-def Adjunction.ofCoUniversal (F : C ⥤ D) (G : D.obj → C.obj)
-  (p : ∀ A, CoUniversal F A (G A)) : F ⊣ CoUniversal.right_adjoint p :=
+def Adjunction.ofCoUniversal (F : C ⥤ D)
+    (p : ∀ A, CoUniversal F A) : F ⊣ CoUniversal.right_adjoint p :=
   NatIso.ofComponents
-    ⟨fun (X, A) => (p A).hom·X, by
+    ⟨fun (X, A) => (p A).rep.hom·X, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := (CoUniversal.data (p A)).factorization (h ○ F[f])
-      simp [CoUniversal.data] at q₀
-      have q₁ := congrFun ((p B).hom.naturality ((p A)·X h ○[C] f)) (g ○ (p A)⁻¹·(G A) (𝟙))
-      have q₂ := congrFun ((p A).hom.naturality f) h
-      simp at q₂
-      simp_all⟩
-    fun (X, A) => (p A).IsIso X
+      have q₀ := CoUniversal.data.factorization h
+      have q₁ := congrFun (CoUniversal.rep.hom.naturality
+        (CoUniversal.data.factor h ○[C] f)) (g ○ CoUniversal.data.morphism)
+      conv_lhs => rw [q₀]
+      simpa using q₁⟩
+    fun (X, A) => (p A).rep.IsIso X
 
 variable (φ : F ⊣[C, D] G)
 
-abbrev Adjunction.Universal (X : C.obj) : Universal G X F[X] where
-  hom := {
-    app Y := φ·(X, Y),
-    naturality f := by simpa using φ.hom·(X, –).naturality f}
-  inv := {
-    app Y := φ⁻¹·(X, Y),
-    naturality f := by simpa using φ.inv·(X, –).naturality f}
+/-- 伴隨給出 universal property -/
+abbrev Adjunction.Universal (X : C.obj) : CategoryTheory.Universal G X where
+  obj := F[X]
+  rep := {
+    hom := {
+      app Y := φ·(X, Y),
+      naturality f := by simpa using φ.hom·(X, –).naturality f}
+    inv := {
+      app Y := φ⁻¹·(X, Y),
+      naturality f := by simpa using φ.inv·(X, –).naturality f} }
 
-abbrev Adjunction.CoUniversal (A : D.obj) : CoUniversal F A G[A] where
-  hom := {
-    app B := φ·(B, A),
-    naturality f := by simpa using φ.hom·(–, A).naturality f}
-  inv := {
-    app B := φ⁻¹·(B, A),
-    naturality f := by simpa using φ.inv·(–, A).naturality f}
+/-- 伴隨給出 couniversal property -/
+abbrev Adjunction.CoUniversal (A : D.obj) : CategoryTheory.CoUniversal F A where
+  obj := G[A]
+  rep := {
+    hom := {
+      app B := φ·(B, A),
+      naturality f := by simpa using φ.hom·(–, A).naturality f}
+    inv := {
+      app B := φ⁻¹·(B, A),
+      naturality f := by simpa using φ.inv·(–, A).naturality f} }
 
 end UniversalProperty
 end CategoryTheory

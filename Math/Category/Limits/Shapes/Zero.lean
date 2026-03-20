@@ -6,21 +6,21 @@ import MATH.Category.Limits.Shapes.InitialTerminal
 Zero object：既是 initial 又是 terminal 的 object。
 
 ## 定義
-- `HasZero C` — C 有 zero object（既是 initial 又是 terminal）
+- `ZeroData C` — C 有 zero object（既是 initial 又是 terminal）
 
 ## 定理
-### `HasZero`
-- `.toInitialData` — `HasZero` ⟹ `InitialData`
-- `.toTerminalData` — `HasZero` ⟹ `TerminalData`
-- `.toInitial` — `HasZero` ⟹ `Initial`
-- `.toTerminal` — `HasZero` ⟹ `Terminal`
+### `ZeroData`
+- `.toInitialData` — `ZeroData` ⟹ `InitialData`
+- `.toTerminalData` — `ZeroData` ⟹ `TerminalData`
+- `.toInitial` — `ZeroData` ⟹ `Initial`
+- `.toTerminal` — `ZeroData` ⟹ `Terminal`
 - `.zeroHom` — zero morphism `X ⟶ Y`（透過 zero object）
 -/
 
 namespace CategoryTheory
 
 /-- Zero object：既是 initial 又是 terminal -/
-structure HasZero (C : Category) where
+structure ZeroData (C : Category) where
   /-- Zero object -/
   zero : C.obj
   /-- 唯一態射 `zero ⟶ Y`（initial） -/
@@ -30,38 +30,38 @@ structure HasZero (C : Category) where
   to_zero (X : C.obj) : X ⟶ zero
   to_zero_unique (f : X ⟶ zero) : f = to_zero X
 
--- ─── HasZero ─────────────────────────────────────────────────────────────────
+-- ─── ZeroData ─────────────────────────────────────────────────────────────────
 
-namespace HasZero
+namespace ZeroData
 
 variable {C : Category}
 
-/-- `HasZero` ⟹ `InitialData` -/
-def toInitialData (h : HasZero C) : InitialData C where
+/-- `ZeroData` ⟹ `InitialData` -/
+def toInitialData (h : ZeroData C) : InitialData C where
   obj := h.zero
   map := h.from_zero
   map_unique := h.from_zero_unique
 
-/-- `HasZero` ⟹ `TerminalData` -/
-def toTerminalData (h : HasZero C) : TerminalData C where
+/-- `ZeroData` ⟹ `TerminalData` -/
+def toTerminalData (h : ZeroData C) : TerminalData C where
   obj := h.zero
   map := h.to_zero
   map_unique := h.to_zero_unique
 
-/-- `HasZero` ⟹ `Initial` -/
+/-- `ZeroData` ⟹ `Initial` -/
 @[reducible]
-noncomputable def toInitial (h : HasZero C) : Initial C :=
+noncomputable def toInitial (h : ZeroData C) : Initial C :=
   h.toInitialData.toInitial
 
-/-- `HasZero` ⟹ `Terminal` -/
+/-- `ZeroData` ⟹ `Terminal` -/
 @[reducible]
-noncomputable def toTerminal (h : HasZero C) : Terminal C :=
+noncomputable def toTerminal (h : ZeroData C) : Terminal C :=
   h.toTerminalData.toTerminal
 
 /-- Zero morphism `X ⟶ Y`：透過 zero object 的合成 -/
-def zeroHom (h : HasZero C) (X Y : C.obj) : X ⟶ Y :=
+def zeroHom (h : ZeroData C) (X Y : C.obj) : X ⟶ Y :=
   h.from_zero Y ○ h.to_zero X
 
-end HasZero
+end ZeroData
 
 end CategoryTheory

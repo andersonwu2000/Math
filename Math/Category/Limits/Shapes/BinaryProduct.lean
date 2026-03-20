@@ -70,9 +70,9 @@ structure BinaryCoproductData where
 namespace BinaryProduct
 
 /-- `BinaryProduct` ⟹ `BinaryProductData` -/
-noncomputable def data (h : BinaryProduct A B) : BinaryProductData A B :=
-  let ld := Limit.data (⟨h.lim, h.universal⟩ : Limit _)
-  { obj           := h.lim
+noncomputable def data [h : BinaryProduct A B] : BinaryProductData A B :=
+  let ld := Limit.data
+  { obj           := h.obj
     π₁            := ld.cone·false
     π₂            := ld.cone·true
     lift h₁ h₂    := ld.lift {
@@ -84,13 +84,13 @@ noncomputable def data (h : BinaryProduct A B) : BinaryProductData A B :=
       ld.lift_unique _ k (fun | false => hk₁ | true => hk₂) }
 
 /-- Binary product 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : BinaryProduct A B) : h₁.lim ≅ h₂.lim :=
-  CoUniversal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : BinaryProduct A B) : h₁.obj ≅ h₂.obj :=
+  Limit.unique h₁.toLimit h₂.toLimit
 
 instance (priority := 100) ShapeComplete.instBinaryProduct
     [h : ShapeComplete (DiscreteCat Bool) C] : BinaryProduct A B where
-  lim := (h.hasLimit (discreteFunctor (BinaryFamily A B))).lim
-  universal := (h.hasLimit (discreteFunctor (BinaryFamily A B))).universal
+  obj := (h.hasLimit (discreteFunctor (BinaryFamily A B))).obj
+  rep := (h.hasLimit (discreteFunctor (BinaryFamily A B))).rep
 
 end BinaryProduct
 
@@ -98,8 +98,8 @@ end BinaryProduct
 @[reducible]
 noncomputable def BinaryProductData.toBinaryProduct (pd : BinaryProductData A B) :
     BinaryProduct A B where
-  lim := pd.obj
-  universal := (LimitData.toLimit {
+  obj := pd.obj
+  rep := (LimitData.toLimit {
     obj  := pd.obj
     cone := show Δ[pd.obj] ⇒ discreteFunctor (BinaryFamily A B) from {
       app := fun | false => pd.π₁ | true => pd.π₂
@@ -109,16 +109,16 @@ noncomputable def BinaryProductData.toBinaryProduct (pd : BinaryProductData A B)
       match a with | false => exact pd.lift_π₁ _ _ | true => exact pd.lift_π₂ _ _
     lift_unique φ k hk :=
       pd.lift_unique _ _ k (hk false) (hk true)
-  }).universal
+  }).rep
 
 -- ─── BinaryCoproduct ─────────────────────────────────────────────────────────
 
 namespace BinaryCoproduct
 
 /-- `BinaryCoproduct` ⟹ `BinaryCoproductData` -/
-noncomputable def data (h : BinaryCoproduct A B) : BinaryCoproductData A B :=
-  let cd := CoLimit.data (⟨h.colim, h.universal⟩ : CoLimit _)
-  { obj            := h.colim
+noncomputable def data [h : BinaryCoproduct A B] : BinaryCoproductData A B :=
+  let cd := CoLimit.data
+  { obj            := h.obj
     ι₁             := cd.cocone·false
     ι₂             := cd.cocone·true
     desc h₁ h₂     := cd.desc {
@@ -130,13 +130,13 @@ noncomputable def data (h : BinaryCoproduct A B) : BinaryCoproductData A B :=
       cd.desc_unique _ k (fun | false => hk₁ | true => hk₂) }
 
 /-- Binary coproduct 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : BinaryCoproduct A B) : h₁.colim ≅ h₂.colim :=
-  Universal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : BinaryCoproduct A B) : h₁.obj ≅ h₂.obj :=
+  CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
 instance (priority := 100) ShapeCoComplete.instBinaryCoproduct
     [h : ShapeCoComplete (DiscreteCat Bool) C] : BinaryCoproduct A B where
-  colim := (h.hascolimit (discreteFunctor (BinaryFamily A B))).colim
-  universal := (h.hascolimit (discreteFunctor (BinaryFamily A B))).universal
+  obj := (h.hascolimit (discreteFunctor (BinaryFamily A B))).obj
+  rep := (h.hascolimit (discreteFunctor (BinaryFamily A B))).rep
 
 end BinaryCoproduct
 
@@ -144,8 +144,8 @@ end BinaryCoproduct
 @[reducible]
 noncomputable def BinaryCoproductData.toBinaryCoproduct (cpd : BinaryCoproductData A B) :
     BinaryCoproduct A B where
-  colim := cpd.obj
-  universal := (CoLimitData.toCoLimit {
+  obj := cpd.obj
+  rep := (CoLimitData.toCoLimit {
     obj    := cpd.obj
     cocone := show discreteFunctor (BinaryFamily A B) ⇒ Δ[cpd.obj] from {
       app := fun | false => cpd.ι₁ | true => cpd.ι₂
@@ -155,6 +155,6 @@ noncomputable def BinaryCoproductData.toBinaryCoproduct (cpd : BinaryCoproductDa
       match a with | false => exact cpd.desc_ι₁ _ _ | true => exact cpd.desc_ι₂ _ _
     desc_unique φ k hk :=
       cpd.desc_unique _ _ k (hk false) (hk true)
-  }).universal
+  }).rep
 
 end CategoryTheory

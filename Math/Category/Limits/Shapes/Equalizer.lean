@@ -70,41 +70,42 @@ private def mkFork (h : Z ⟶ A) (hh : f ○ h = g ○ h) :
     · exact hh
 
 /-- `Equalizer` ⟹ `EqualizerData` -/
-noncomputable def data (eq : Equalizer f g) : EqualizerData f g :=
-  let ld := Limit.data (⟨eq.lim, eq.universal⟩ : Limit _)
-  { obj  := eq.lim
-    π    := ld.cone·.zero
+noncomputable def data [h : Equalizer f g] : EqualizerData f g :=
+  let ld := Limit.data
+  { obj  := h.obj
+    π    := ld.cone·WalkingParallelPair.zero
     cond := by
       have l := ld.cone.naturality WalkingParallelPairMor.left
       have r := ld.cone.naturality WalkingParallelPairMor.right
       simpa using l.symm.trans r
     lift h hh := ld.lift (mkFork f g h hh)
-    lift_π h hh := by simpa using ld.lift_π (mkFork f g h hh) .zero
+    lift_π h hh := by simpa using ld.lift_π (mkFork f g h hh) WalkingParallelPair.zero
     lift_unique h hh k hk :=
       ld.lift_unique (mkFork f g h hh) k (by
         intro j; cases j
         next => simpa using hk
         next =>
           have hnat := ld.cone.naturality WalkingParallelPairMor.left
-          simp only [Diagonal, Category.id_comp] at hnat; rw [hnat, Category.assoc, hk]
-          simp [mkFork]) }
+          simp only [Diagonal, Category.id_comp] at hnat
+          simp only [mkFork, ← hk, ← Category.assoc]
+          exact congrArg (· ○ k) hnat) }
 
 /-- Equalizer 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Equalizer f g) : h₁.lim ≅ h₂.lim :=
-  CoUniversal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : Equalizer f g) : h₁.obj ≅ h₂.obj :=
+  Limit.unique h₁.toLimit h₂.toLimit
 
 instance (priority := 100) ShapeComplete.instEqualizer
     [h : ShapeComplete WalkingParallelPairCat C] : Equalizer f g where
-  lim := (h.hasLimit (parallelPairFunctor f g)).lim
-  universal := (h.hasLimit (parallelPairFunctor f g)).universal
+  obj := (h.hasLimit (parallelPairFunctor f g)).obj
+  rep := (h.hasLimit (parallelPairFunctor f g)).rep
 
 end Equalizer
 
 /-- `EqualizerData` ⟹ `Equalizer` -/
 @[reducible]
 noncomputable def EqualizerData.toEqualizer (ed : EqualizerData f g) : Equalizer f g where
-  lim := ed.obj
-  universal := (LimitData.toLimit {
+  obj := ed.obj
+  rep := (LimitData.toLimit {
     obj  := ed.obj
     cone := show Δ[ed.obj] ⇒ parallelPairFunctor f g from {
       app j := match j with | .zero => ed.π | .one => f ○ ed.π
@@ -126,7 +127,7 @@ noncomputable def EqualizerData.toEqualizer (ed : EqualizerData f g) : Equalizer
         simp at this; exact this.symm
     lift_unique φ k hk :=
       ed.lift_unique _ _ k (by simpa using hk .zero)
-  }).universal
+  }).rep
 
 -- ─── CoEqualizer ──────────────────────────────────────────────────────────────
 
@@ -141,41 +142,41 @@ private def mkCofork (h : B ⟶ Z) (hh : h ○ f = h ○ g) :
     · exact hh.symm
 
 /-- `CoEqualizer` ⟹ `CoEqualizerData` -/
-noncomputable def data (coeq : CoEqualizer f g) : CoEqualizerData f g :=
-  let cd := CoLimit.data (⟨coeq.colim, coeq.universal⟩ : CoLimit _)
-  { obj  := coeq.colim
-    ι    := cd.cocone·.one
+noncomputable def data [h : CoEqualizer f g] : CoEqualizerData f g :=
+  let cd := CoLimit.data
+  { obj  := h.obj
+    ι    := cd.cocone·WalkingParallelPair.one
     cond := by
       have l := cd.cocone.naturality WalkingParallelPairMor.left
       have r := cd.cocone.naturality WalkingParallelPairMor.right
       simp at l r; exact l.trans r.symm
     desc h hh := cd.desc (mkCofork f g h hh)
-    desc_ι h hh := by simpa using cd.desc_ι (mkCofork f g h hh) .one
+    desc_ι h hh := by simpa using cd.desc_ι (mkCofork f g h hh) WalkingParallelPair.one
     desc_unique h hh k hk :=
       cd.desc_unique (mkCofork f g h hh) k (by
         intro j; cases j
         next =>
           have hnat := cd.cocone.naturality WalkingParallelPairMor.left
-          simp only [Diagonal, Category.comp_id] at hnat; rw [← hnat, ← Category.assoc, hk]
-          simp [mkCofork]
+          simp only [Diagonal, Category.comp_id, mkCofork] at hnat ⊢
+          rw [← hnat, ← Category.assoc]; congr 1
         next => simpa using hk) }
 
 /-- CoEqualizer 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : CoEqualizer f g) : h₁.colim ≅ h₂.colim :=
-  Universal.unique h₁.universal h₂.universal
+noncomputable def unique (h₁ h₂ : CoEqualizer f g) : h₁.obj ≅ h₂.obj :=
+  CoLimit.unique h₁.toCoLimit h₂.toCoLimit
 
 instance (priority := 100) ShapeCoComplete.instCoEqualizer
     [h : ShapeCoComplete WalkingParallelPairCat C] : CoEqualizer f g where
-  colim := (h.hascolimit (parallelPairFunctor f g)).colim
-  universal := (h.hascolimit (parallelPairFunctor f g)).universal
+  obj := (h.hascolimit (parallelPairFunctor f g)).obj
+  rep := (h.hascolimit (parallelPairFunctor f g)).rep
 
 end CoEqualizer
 
 /-- `CoEqualizerData` ⟹ `CoEqualizer` -/
 @[reducible]
 noncomputable def CoEqualizerData.toCoEqualizer (ced : CoEqualizerData f g) : CoEqualizer f g where
-  colim := ced.obj
-  universal := (CoLimitData.toCoLimit {
+  obj := ced.obj
+  rep := (CoLimitData.toCoLimit {
     obj    := ced.obj
     cocone := show parallelPairFunctor f g ⇒ Δ[ced.obj] from {
       app j := match j with | .zero => ced.ι ○ f | .one => ced.ι
@@ -197,6 +198,6 @@ noncomputable def CoEqualizerData.toCoEqualizer (ced : CoEqualizerData f g) : Co
       next => exact ced.desc_ι _ _
     desc_unique φ k hk :=
       ced.desc_unique _ _ k (by simpa using hk .one)
-  }).universal
+  }).rep
 
 end CategoryTheory

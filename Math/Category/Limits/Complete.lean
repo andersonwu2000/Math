@@ -38,7 +38,7 @@ class ShapeComplete (J C : Category) where
 /-- `Complete C` 蘊含 `ShapeComplete J C`：`lim[F]` 是 `F` 的 limit -/
 instance (priority := 100) Complete.instShapeComplete
     [h : Complete.{u, v} C] {J : Category.{u, v}} : ShapeComplete J C where
-  hasLimit F := { lim := h.lim[F], universal := h.adj.CoUniversal F }
+  hasLimit F := { obj := h.lim[F], rep := (h.adj.CoUniversal F).rep }
 
 instance (priority := 100) ShapeComplete.instLimit
     [h : ShapeComplete J C] {F : J ⥤ C} : Limit F :=
@@ -56,7 +56,7 @@ class ShapeCoComplete (J C : Category) where
 /-- `CoComplete C` 蘊含 `ShapeCoComplete J C`：`colim[F]` 是 `F` 的 colimit -/
 instance (priority := 100) CoComplete.instShapeCoComplete
     [h : CoComplete.{u, v} C] {J : Category.{u, v}} : ShapeCoComplete J C where
-  hascolimit F := { colim := h.colim[F], universal := h.adj.Universal F }
+  hascolimit F := { obj := h.colim[F], rep := (h.adj.Universal F).rep }
 
 instance (priority := 100) ShapeCoComplete.instCoLimit
     [h : ShapeCoComplete J C] {F : J ⥤ C} : CoLimit F :=
