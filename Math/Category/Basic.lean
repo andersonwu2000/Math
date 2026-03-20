@@ -15,6 +15,7 @@ Category 的基礎結構。
 ## 定理
 ### `Whisker`
 - `.right_cancel` / `.left_cancel` — cancellation
+- `.triple_cancel` — 三重消去
 -/
 
 namespace CategoryTheory
@@ -32,7 +33,7 @@ structure Category where
 
 -- 帶明確 category 的 notation
 notation:50 X " ⟶[" C "] " Y => @Category.hom C X Y
-notation:90 "𝟙[" C "]" X:91 => @Category.id C X
+notation:90 "𝟙[" C "] " X:91 => @Category.id C X
 notation:60 g:61 " ○[" C "] " f:60 =>
   Category.comp (self := C) g f
 
@@ -46,6 +47,8 @@ attribute [trans] Category.comp
 attribute [simp] Category.id_comp Category.comp_id Category.assoc
 attribute [grind =] Category.id_comp Category.comp_id
 attribute [grind _=_] Category.assoc
+
+-- ─── Category ──────────────────────────────────────────────────────────────
 
 namespace Category
 variable (C : Category)
@@ -66,6 +69,8 @@ abbrev hom.op (f : X ⟶[C] Y) : Y ⟶[Cᵒᵖ] X := f
 abbrev obj.op (X : Cᵒᵖ.obj) : C.obj := X
 
 end Category
+
+-- ─── Whisker ───────────────────────────────────────────────────────────────
 
 namespace Whisker
 variable (h : X ⟶[C] Y)

@@ -22,7 +22,7 @@ Category equivalence、adjoint equivalence
 
 namespace CategoryTheory
 
-/-! ## Category equivalence -/
+-- ─── CatEquiv ────────────────────────────────────────────────────────────────
 
 /-- Category equivalence：`F`、`G`、`η : 1_C ≅ GF`、`ρ : FG ≅ 1_D` -/
 structure CatEquiv (C D : Category) where
@@ -51,7 +51,7 @@ def symm (e : CatEquiv C D) : CatEquiv D C where
 
 end CatEquiv
 
-/-! ## Adjoint equivalence -/
+-- ─── AdjointEquivalence ──────────────────────────────────────────────────────
 
 /-- Adjoint equivalence：`η`、`ε` 為 natural isomorphism，滿足 triangle identity -/
 structure AdjointEquivalence (F : C ⥤ D) (G : D ⥤ C) where
@@ -121,7 +121,7 @@ private lemma map_ε_inv_eq_η (e : AdjointEquivalence F G) (A : D.obj) :
   exact hGεA_mono.right_uni (h1.trans h2.symm)
 
 /-- Adjoint equivalence 蘊含 fully faithful -/
-noncomputable instance fullyFaithful (e : AdjointEquivalence F G) :
+instance fullyFaithful (e : AdjointEquivalence F G) :
     F.FullyFaithful where
   map_bijective {X Y} := ⟨
     -- Faithful：η·Y 是 monomorphism
@@ -141,7 +141,7 @@ noncomputable instance fullyFaithful (e : AdjointEquivalence F G) :
 
 /-- 從 category equivalence 構造 adjoint equivalence。
 令 ε' = ρ。 -/
-noncomputable def ofCatEquiv (e : CatEquiv C D) :
+def ofCatEquiv (e : CatEquiv C D) :
     AdjointEquivalence e.F e.G := by
   have hGρ (A : D.obj) : (e.G[e.ρ.hom·A]).IsIso := {
     inv := e.G[e.ρ.inv·A]

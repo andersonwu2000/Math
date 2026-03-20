@@ -13,8 +13,8 @@ Isomorphism。
 ### `Iso`
 - `.refl` / `.symm` / `.trans` — 自反、對稱、遞移
 ### `Category.hom`
-- `SplitMono_Epi_IsIso` — split mono + epi ⟹ iso
-- `SplitEpi_Mono_IsIso` — split epi + mono ⟹ iso
+- `splitMono_epi_IsIso` — split mono + epi ⟹ iso
+- `splitEpi_mono_IsIso` — split epi + mono ⟹ iso
 -/
 
 namespace CategoryTheory
@@ -83,6 +83,9 @@ abbrev inv [f.IsIso] : Y ⟶ X := IsIso.inv f
 notation:max f:max "⁻¹" => inv f
 
 end Category.hom
+
+-- ─── IsIso ───────────────────────────────────────────────────────────────────
+
 namespace IsIso
 variable (f : X ⟶ Y) (g : Y ⟶ Z)
 
@@ -137,12 +140,14 @@ instance Iso.IsIso (i : X ≅ Y) : i.hom.IsIso where
 instance Iso.invIsIso (i : X ≅ Y) : i.inv.IsIso where
   inv := i.hom
 
+-- ─── Category.hom ────────────────────────────────────────────────────────────
+
 namespace Category.hom
 
 /-- Split mono + epi ⟹ iso -/
 @[reducible]
 noncomputable
-def SplitMono_Epi_IsIso (f : X ⟶ Y)
+def splitMono_epi_IsIso (f : X ⟶ Y)
   [p : f.IsSplitMono] [q : f.IsEpi] : f.IsIso where
   inv := f.left_inv
   inv_hom_id := p.inv_hom_id
@@ -154,7 +159,7 @@ def SplitMono_Epi_IsIso (f : X ⟶ Y)
 /-- Split epi + mono ⟹ iso -/
 @[reducible]
 noncomputable
-def SplitEpi_Mono_IsIso (f : X ⟶ Y)
+def splitEpi_mono_IsIso (f : X ⟶ Y)
   [p : f.IsSplitEpi] [q : f.IsMono] : f.IsIso where
   inv := f.right_inv
   hom_inv_id := p.hom_inv_id

@@ -12,9 +12,9 @@ Types category 與 Hom bifunctor。
 
 ## 定理
 ### `Types`
-- `.Mono_iff_Injective` / `.Epi_iff_Surjective` — mono/epi ↔ injective/surjective
-- `.Epi_to_SplitEpi` — epi ⟹ split epi（in Types）
-- `.Iso_to_Bijection` / `.Bijection_to_Iso` — iso ↔ bijective
+- `.mono_iff_injective` / `.epi_iff_surjective` — mono/epi ↔ injective/surjective
+- `.epi_to_splitEpi` — epi ⟹ split epi（in Types）
+- `.iso_to_bijection` / `.bijection_to_iso` — iso ↔ bijective
 ### `NatIso`
 - `.hom_inv_id_app_apply` / `.inv_hom_id_app_apply` — 逐點消去律
 -/
@@ -80,7 +80,7 @@ open Function
 variable {f : X ⟶[Types] Y}
 
 /-- Mono ↔ injective -/
-lemma Mono_iff_Injective : Injective f ↔ f.IsMono := ⟨
+lemma mono_iff_injective : Injective f ↔ f.IsMono := ⟨
   fun p => ⟨fun q => by
     funext z
     exact p (congrFun q z)⟩,
@@ -90,10 +90,10 @@ lemma Mono_iff_Injective : Injective f ↔ f.IsMono := ⟨
     exact congrFun (p.right_uni q) PUnit.unit ⟩
 
 lemma Mono.injective [p : f.IsMono] : f x = f y → x = y :=
-  fun q => Mono_iff_Injective.mpr p q
+  fun q => mono_iff_injective.mpr p q
 
 /-- Epi ↔ surjective -/
-lemma Epi_iff_Surjective : Surjective f ↔ f.IsEpi := ⟨
+lemma epi_iff_surjective : Surjective f ↔ f.IsEpi := ⟨
   fun p => ⟨fun q => by
     funext z
     let ⟨a, p⟩ := p z
@@ -107,24 +107,24 @@ lemma Epi_iff_Surjective : Surjective f ↔ f.IsEpi := ⟨
     simpa [g, h] using congrFun (p.left_uni q) ⟩
 
 lemma Epi.surjective [p : f.IsEpi] (y : Y) : ∃ x : X, f x = y :=
-  Epi_iff_Surjective.mpr p y
+  epi_iff_surjective.mpr p y
 
 /-- Epi ⟹ split epi -/
 noncomputable
-instance Epi_to_SplitEpi [p : f.IsEpi] : f.IsSplitEpi where
+instance epi_to_splitEpi [p : f.IsEpi] : f.IsSplitEpi where
   right_inv y :=
-    Classical.choose (Epi_iff_Surjective.mpr p y)
+    Classical.choose (epi_iff_surjective.mpr p y)
   hom_inv_id := by
     ext y
-    simpa using Classical.choose_spec (Epi_iff_Surjective.mpr p y)
+    simpa using Classical.choose_spec (epi_iff_surjective.mpr p y)
 
 /-- Iso ⟹ bijective -/
-def Iso_to_Bijection [p : f.IsIso] : Bijective f :=
-  ⟨Mono_iff_Injective.mpr (IsIso.IsMono f), Epi_iff_Surjective.mpr (IsIso.IsEpi f)⟩
+def iso_to_bijection [p : f.IsIso] : Bijective f :=
+  ⟨mono_iff_injective.mpr (IsIso.IsMono f), epi_iff_surjective.mpr (IsIso.IsEpi f)⟩
 
 /-- Bijective ⟹ iso -/
 noncomputable
-instance Bijection_to_Iso (p : Bijective f) : f.IsIso where
+instance bijection_to_iso (p : Bijective f) : f.IsIso where
   inv y := Classical.choose (p.2 y)
   inv_hom_id := by
     funext x
@@ -133,8 +133,8 @@ instance Bijection_to_Iso (p : Bijective f) : f.IsIso where
     funext y
     exact Classical.choose_spec (p.2 y)
 
-lemma Iso.injective [p : f.IsIso] : f x = f y → x = y := Types.Mono.injective
-lemma Iso.surjective [p : f.IsIso] (y : Y) : ∃ x : X, f x = y := Types.Epi.surjective y
+lemma Iso.injective [p : f.IsIso] : f x = f y → x = y := Mono.injective
+lemma Iso.surjective [p : f.IsIso] (y : Y) : ∃ x : X, f x = y := Epi.surjective y
 
 lemma Iso.inv_hom_id [p : f.IsIso] : f⁻¹ (f x) = x := by
   simpa using congrFun p.inv_hom_id x
@@ -144,10 +144,13 @@ lemma Iso.hom_inv_id [p : f.IsIso] : f (f⁻¹ y) = y := by
 
 /-- Mono + epi ⟹ iso -/
 noncomputable
-instance Epi_Mono_to_Iso [p : f.IsMono] [q : f.IsEpi] : f.IsIso :=
-  Bijection_to_Iso ⟨Mono_iff_Injective.mpr p, Epi_iff_Surjective.mpr q⟩
+instance epi_mono_to_iso [p : f.IsMono] [q : f.IsEpi] : f.IsIso :=
+  bijection_to_iso ⟨mono_iff_injective.mpr p, epi_iff_surjective.mpr q⟩
 
 end Types
+
+-- ─── Functor ─────────────────────────────────────────────────────────────────
+
 namespace Functor
 variable (F G : C ⥤ Types)
 
@@ -164,6 +167,8 @@ lemma map_hom_map_inv_apply (i : X ≅[C] Y) (a : F[Y]) :
     rw [Types.comp_apply F[i.hom], ←F.map_comp]; simp
 
 end Functor
+
+-- ─── NatIso ──────────────────────────────────────────────────────────────────
 
 namespace NatIso
 variable {F G : C ⥤ Types} (α : F ≅ G)

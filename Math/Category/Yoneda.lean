@@ -7,44 +7,44 @@ import MATH.Category.Functor.FullyFaithful
 Yoneda embedding 與 Yoneda lemma。
 
 ## 定義
-- `yoneda` — Yoneda embedding `C ⥤ ⟦Cᵒᵖ, Types⟧`
-- `coyoneda` — co-Yoneda embedding `Cᵒᵖ ⥤ ⟦C, Types⟧`
+- `Yoneda` — Yoneda embedding `C ⥤ ⟦Cᵒᵖ, Types⟧`
+- `CoYoneda` — co-Yoneda embedding `Cᵒᵖ ⥤ ⟦C, Types⟧`
 
 ## 定理
-### `yoneda` / `coyoneda`
-- `.Principal` — `F[f] (α·X (𝟙 X)) = α·A f`
+### `Yoneda` / `CoYoneda`
+- `.principal` / `.principal_naturality` — Yoneda principal lemma
 - `.Equiv` — Yoneda equivalence `(Hom[–, X] ⇒ F) ≅ F[X]`
-- `.Lemma` — Yoneda lemma `Hom[yonedaᵒᵖ–, –] ≅ Evaluation`
+- `.Lemma` — Yoneda lemma `Hom[Yonedaᵒᵖ–, –] ≅ Evaluation`
 - `.FullyFaithful` — Yoneda embedding 是 fully faithful
 -/
 
 namespace CategoryTheory
 
-/-- Yoneda embedding `yoneda[X] = Hom[–, X]` -/
+/-- Yoneda embedding `Yoneda[X] = Hom[–, X]` -/
 @[simps]
-def yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧ where
+def Yoneda : C ⥤ ⟦Cᵒᵖ, Types⟧ where
   obj X := Hom[–, X]
   map f := Hom[–, f]
   map_comp g f := by ext; simp; grind
 
-namespace yoneda
+namespace Yoneda
 variable {C : Category}
 
 @[simp]
 lemma map_eq_comp {f : X ⟶ Y} :
-  yoneda[f] = {app Z g := f ○ g, naturality := by simp} := by
+  Yoneda[f] = {app Z g := f ○ g, naturality := by simp} := by
     ext; simp; grind
 
 /-- Yoneda principal：`F[f] (α·X (𝟙 X)) = α·A f` -/
 @[simp, grind =, grind _=_]
-lemma Principal
+lemma principal
   (α : Hom[–, X] ⇒ F) (f : A ⟶ X) :
   F[f] (α·X (𝟙 X)) = α·A f := by
   have := (Types.naturality_apply α f) (𝟙 X)
   simp_all
 
 @[simp, grind =]
-lemma Principal_naturality
+lemma principal_naturality
   (f : Y ⟶ X) (α : Hom[–, X] ⇒ F) (γ : F ⇒ G) :
   G[f] (γ·X (α·X (𝟙 X))) = γ·Y (α·Y f) := by
   have := (Types.naturality_apply γ f) (α·X (𝟙 X))
@@ -62,54 +62,56 @@ abbrev Evaluation : Cᵒᵖ × ⟦Cᵒᵖ, Types⟧ ⥤ Types where
   obj := fun (X, F) => F[X]
   map := fun {X Y} (f, α) => Y.2[f] ○[Types] α·X.1
 
-/-- Yoneda lemma：`Hom[yonedaᵒᵖ–, –] ≅ Evaluation` -/
+/-- Yoneda lemma：`Hom[Yonedaᵒᵖ–, –] ≅ Evaluation` -/
 @[simp]
 def Lemma :
-  Hom[yonedaᵒᵖ–, –] ≅[⟦Cᵒᵖ × ⟦Cᵒᵖ, Types⟧, Types⟧] Evaluation :=
+  Hom[Yonedaᵒᵖ–, –] ≅[⟦Cᵒᵖ × ⟦Cᵒᵖ, Types⟧, Types⟧] Evaluation :=
   NatIso.ofComponents
   {app := fun (X, F) => (Equiv X.op F).hom}
   (fun (X, F) => inferInstance)
 
 lemma map_eq_inv :
-  yoneda.map = (Equiv X Hom[–, Y]).inv := by
+  Yoneda.map = (Equiv X Hom[–, Y]).inv := by
   ext; simp
 
 /-- Yoneda embedding 是 fully faithful -/
 instance FullyFaithful :
-  (yoneda : C ⥤ _).FullyFaithful where
+  (Yoneda : C ⥤ _).FullyFaithful where
   map_bijective {X Y} := ⟨
     fun _ _ p => by
       simp at p
       simpa using congrFun₂ p X (𝟙 X),
     fun α => ⟨α·X (𝟙 X), by ext Z g; have := (Types.naturality_apply α g) (𝟙 X); simp_all⟩ ⟩
 
-end yoneda
+end Yoneda
 
-/-- Co-Yoneda embedding `coyoneda[X] = Hom[X, –]` -/
+-- ─── CoYoneda ─────────────────────────────────────────────────────────────
+
+/-- Co-Yoneda embedding `CoYoneda[X] = Hom[X, –]` -/
 @[simps]
-def coyoneda : Cᵒᵖ ⥤ ⟦C, Types⟧ where
+def CoYoneda : Cᵒᵖ ⥤ ⟦C, Types⟧ where
   obj X := Hom[X, –]
   map f := Hom[f, –]
   map_comp g f := by aesop_cat; ext; grind
 
-namespace coyoneda
+namespace CoYoneda
 variable {C : Category}
 
 @[simp]
 lemma map_eq_comp {f : X ⟶ Y} :
-  coyoneda[f] = {app Z g := g ○ f, naturality := by simp} := by
+  CoYoneda[f] = {app Z g := g ○ f, naturality := by simp} := by
     ext; simp; grind
 
 /-- Co-Yoneda principal：`F[f] (α·X (𝟙 X)) = α·A f` -/
 @[simp, grind =, grind _=_]
-lemma Principal
+lemma principal
   (α : Hom[X, –] ⇒ F) (f : A ⟶ X) :
   F[f] (α·X (𝟙[C] X)) = α·A f := by
   have := Types.naturality_apply α f (𝟙 X)
   simp_all
 
 @[simp, grind =]
-lemma Principal_naturality
+lemma principal_naturality
   (f : Y ⟶ X) (α : Hom[X, –] ⇒ F) (γ : F ⇒ G) :
   G[f] (γ·X (α·X (𝟙[C] X))) = γ·Y (α·Y f) := by
   have := (Types.naturality_apply γ f) (α·X (𝟙[C] X))
@@ -126,28 +128,28 @@ abbrev Evaluation : C × ⟦C, Types⟧ ⥤ Types where
   obj := fun (X, F) => F[X]
   map := fun {X Y} (f, α) => Y.2[f] ○[Types] α·X.1
 
-/-- Co-Yoneda lemma：`Hom[coyonedaᵒᵖ–, –] ≅ Evaluation` -/
+/-- Co-Yoneda lemma：`Hom[CoYonedaᵒᵖ–, –] ≅ Evaluation` -/
 @[simp]
 def Lemma :
-  Hom[coyonedaᵒᵖ–, –] ≅[⟦C × ⟦C, Types⟧, Types⟧] Evaluation :=
+  Hom[CoYonedaᵒᵖ–, –] ≅[⟦C × ⟦C, Types⟧, Types⟧] Evaluation :=
   NatIso.ofComponents
     {app := fun (X, F) => (Equiv X F).hom}
     (fun (X, F) => inferInstance)
 
 @[simp, grind =, grind _=_]
 lemma map_eq_inv :
-  coyoneda.map = (Equiv X Hom[Y, –]).inv := by
+  CoYoneda.map = (Equiv X Hom[Y, –]).inv := by
   ext; simp
 
 /-- Co-Yoneda embedding 是 fully faithful -/
 instance FullyFaithful :
-  (coyoneda : Cᵒᵖ ⥤ _).FullyFaithful where
+  (CoYoneda : Cᵒᵖ ⥤ _).FullyFaithful where
   map_bijective {Y X} := ⟨
     fun _ _ p => by
       simp at p
       simpa using congrFun₂ p Y (𝟙 Y),
     fun α => ⟨α·Y (𝟙 Y), by ext Z g; have := (Types.naturality_apply α g) (𝟙[C] Y); simp_all⟩ ⟩
 
-end coyoneda
+end CoYoneda
 
 end CategoryTheory

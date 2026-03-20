@@ -14,7 +14,7 @@ namespace CategoryTheory
 variable {C : Category} {J : Category}
 
 /-- `Δ[X]` 將 `J` 所有 object 映射到 `X`，`Δ[f]` 每個分量均為 `f` -/
-@[simp]
+@[reducible, simp]
 def Diagonal : C ⥤ ⟦J, C⟧ where
   obj X := {
     obj j := X

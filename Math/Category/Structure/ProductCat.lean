@@ -44,6 +44,8 @@ abbrev NatTrans.Prod {F G : C ⥤ D} {F' G' : C' ⥤ D'}
   app := fun (x, x') => (α·x, β·x')
   naturality := by simp [Functor.Prod]
 
+-- ─── ProductCat ──────────────────────────────────────────────────────────────
+
 namespace ProductCat
 
 def fst : C × D ⥤ C where

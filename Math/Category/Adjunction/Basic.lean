@@ -13,13 +13,20 @@ Adjunction 及其等價形式。
 - `HomMate` — mate condition
 - `Units` — unit η、counit ε + triangle identity
 
-## 定理（互相轉換）
-- `HomEquiv.Adjunction` ↔ `Adjunction.HomEquiv`
-- `HomMate.Adjunction` ↔ `Adjunction.HomMate`
-- `Units.Adjunction` ↔ `Adjunction.Units`
+## 定理
+### `HomEquiv`
+- `.naturality_right_symm` — naturality（逆方向，右變量）
+- `.naturality_left_symm` — naturality（逆方向，左變量）
+
 ### `Adjunction`
+- `.ofHomEquiv` — 從 `HomEquiv` 構造
+- `.ofHomMate` — 從 `HomMate` 構造
+- `.ofUnits` — 從 `Units` 構造
+- `.ofUniversal` — 從 universal property 構造
+- `.ofCoUniversal` — 從 couniversal property 構造
 - `.Mate_sharp` / `.Mate_flat` — mate 條件
-- `Universal.Adjunction` / `coUniversal.Adjunction` — 從 universal property 構造
+- `.hom_right_η` — `φ♯f = G[f] ○ φ.η·X`
+- `.inv_left_ε` — `φ♭f = φ.ε·A ○ F[f]`
 -/
 
 namespace CategoryTheory
@@ -61,12 +68,12 @@ structure HomEquiv (F : C ⥤ D) (G : D ⥤ C) where
 attribute [simp, grind =, grind _=_] HomEquiv.naturality_left HomEquiv.naturality_right
 
 @[simp]
-theorem HomEquiv.naturality_right_symm
+lemma HomEquiv.naturality_right_symm
   (φ : HomEquiv F G) (f : X ⟶ G[A]) (g : A ⟶ B) :
   (φ.equiv X B).inv (G[g] ○ f) = g ○ (φ.equiv X A).inv f := by simp
 
 @[simp]
-theorem HomEquiv.naturality_left_symm
+lemma HomEquiv.naturality_left_symm
   (φ : HomEquiv F G) (f : Y ⟶ X) (g : X ⟶ G[A]) :
   (φ.equiv Y A).inv (g ○ f) = Fᵒᵖ[f] ○ (φ.equiv X A).inv g := by
   have h := φ.naturality_left f ((φ.equiv X A).inv g)
@@ -140,13 +147,13 @@ abbrev Adjunction.HomMate : HomMate F G :=
   φ.HomEquiv.HomMate
 
 /-- `k ○ f = g ○ F[h] ↔ G[k] ○ (φ♯f) = (φ♯g) ○ h` -/
-theorem Adjunction.Mate_sharp
+lemma Adjunction.Mate_sharp
   (f g) (h : X ⟶ Y) (k : A ⟶ B) :
   k ○ f = g ○ F[h]  ↔  G[k] ○ (φ ♯ f) = (φ ♯ g) ○ h :=
     φ.HomMate.mate _ _ _ _
 
 /-- `k ○ (φ♭f) = (φ♭g) ○ F[h] ↔ G[k] ○ f = g ○ h` -/
-theorem Adjunction.Mate_flat
+lemma Adjunction.Mate_flat
   (f g) (h : X ⟶ Y) (k : A ⟶ B) :
   k ○ (φ ♭ f) = (φ ♭ g) ○ F[h]  ↔  G[k] ○ f = g ○ h := by
     have := φ.Mate_sharp (φ ♭ f) (φ ♭ g)
@@ -167,7 +174,7 @@ attribute [simp] Units.left_triangle Units.right_triangle
 
 /-- `f ○ ε·F[X] ○ F[η·X] = f` -/
 @[simp]
-theorem Units.left_tri_id
+lemma Units.left_tri_id
   (u : Units F G) {f : F[X] ⟶ Y} :
   f ○ u.ε·F[X] ○ F[u.η·X] = f := by
     have q := congrFun (congrArg NatTrans.app u.left_triangle) X
@@ -175,7 +182,7 @@ theorem Units.left_tri_id
 
 /-- `G[ε·Y] ○ η·G[Y] ○ f = f` -/
 @[simp]
-theorem Units.right_tri_id
+lemma Units.right_tri_id
   (u : Units F G) {f : X ⟶ G[Y]} :
   G[u.ε·Y] ○ u.η·G[Y] ○ f = f := by
     have q := congrFun (congrArg NatTrans.app u.right_triangle) Y
@@ -183,7 +190,7 @@ theorem Units.right_tri_id
 
 /-- `ε·Y ○ F[G[f]] ○ F[η·X] = f` -/
 @[simp]
-theorem Units.flat_sharp_id
+lemma Units.flat_sharp_id
   (u : Units F G) {f : F[X] ⟶ Y} :
   u.ε·Y ○ F[G[f]] ○ F[u.η·X] = f := by
     rw [← Category.assoc]
@@ -194,7 +201,7 @@ theorem Units.flat_sharp_id
 
 /-- `G[ε·A] ○ G[F[g]] ○ η·X = g` -/
 @[simp]
-theorem Units.sharp_flat_id
+lemma Units.sharp_flat_id
   (u : Units F G) {g : X ⟶ G[A]} :
   G[u.ε·A] ○ G[F[g]] ○ u.η·X = g := by
     erw [← u.η.naturality g]
@@ -248,12 +255,12 @@ abbrev Adjunction.ε : F ○[Cat] G ⇒ 𝟙[Cat] D where
     simp
 
 /-- `φ♯f = G[f] ○ φ.η·X` -/
-theorem Adjunction.hom_right_η (f : F[X] ⟶ A) :
+lemma Adjunction.hom_right_η (f : F[X] ⟶ A) :
   φ ♯ f = G[f] ○ φ.η·X := by
     simpa using φ.HomEquiv.naturality_right (𝟙 F[X]) f
 
 /-- `φ♭f = φ.ε·A ○ F[f]` -/
-theorem Adjunction.inv_left_ε (f : X ⟶ G[A]) :
+lemma Adjunction.inv_left_ε (f : X ⟶ G[A]) :
   φ ♭ f = φ.ε·A ○ F[f] := by
     simpa using φ.HomEquiv.naturality_left_symm f (𝟙 G[A])
 
@@ -275,29 +282,29 @@ section UniversalProperty
 abbrev Universal.left_adjoint {G : D ⥤ C} {F : C.obj → D.obj}
   (p : ∀ X, Universal G X (F X)) : C ⥤ D where
   obj := F
-  map {X Y} f := (coyoneda.Equiv (F Y) Hom[F X, –]).hom
+  map {X Y} f := (CoYoneda.Equiv (F Y) Hom[F X, –]).hom
     ((p X).inv ○ Hom[f, G–] ○ (p Y).hom)
   map_comp {Y Z X} g f := by
     have q := congrFun
-      (coyoneda.Equiv (F Y) Hom[F X, –]).inv_hom_id
+      (CoYoneda.Equiv (F Y) Hom[F X, –]).inv_hom_id
       ((p X).inv ○ Hom[f, G–] ○ (p Y).hom)
-    simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, coyoneda.Equiv, Category.id_comp,
+    simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, CoYoneda.Equiv, Category.id_comp,
       Functor.map_id, Category.comp_id, Function.comp_def, id_eq,
       NatTrans.mk.injEq] at q
     have := congr_fun₂ q
     simp_all
 
 /-- 從 couniversal property 族構造右 adjoint -/
-abbrev coUniversal.right_adjoint {F : C ⥤ D} {G : D.obj → C.obj}
-  (p : ∀ A, coUniversal F A (G A)) : D ⥤ C where
+abbrev CoUniversal.right_adjoint {F : C ⥤ D} {G : D.obj → C.obj}
+  (p : ∀ A, CoUniversal F A (G A)) : D ⥤ C where
   obj := G
-  map {X Y} f := (yoneda.Equiv (G X) Hom[–, G Y]).hom
+  map {X Y} f := (Yoneda.Equiv (G X) Hom[–, G Y]).hom
     ((p Y).hom ○ Hom[Fᵒᵖ–, f] ○ (p X).inv)
   map_comp {Y Z X} g f := by
     have q := congrFun
-      (yoneda.Equiv (G Y) Hom[–, G Z]).inv_hom_id
+      (Yoneda.Equiv (G Y) Hom[–, G Z]).inv_hom_id
       ((p Z).hom ○ Hom[Fᵒᵖ–, g] ○ (p Y).inv)
-    simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, yoneda.Equiv, Category.comp_id,
+    simp only [Hom.eq_1, ProductCat_obj, ProductCat_hom, Yoneda.Equiv, Category.comp_id,
       Functor.map_id, Category.id_comp, Function.comp_def, id_eq,
       NatTrans.mk.injEq] at q
     have := congr_fun₂ q
@@ -310,19 +317,21 @@ def Adjunction.ofUniversal (G : D ⥤ C) (F : C.obj → D.obj)
     ⟨fun (X, A) => (p X).hom·A, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := Universal.factorization (p X) _ ((p X)·A h)
+      have q₀ := (Universal.data (p X)).factorization ((p X)·A h)
       have q₁ := congrFun ((p Y).hom.naturality (g ○ h)) (Universal.left_adjoint p)[f]
+      simp [Universal.data] at q₀
       simp_all⟩
     fun (X, A) => (p X).IsIso A
 
 /-- `F ⊣ right_adjoint p` -/
-def Adjunction.ofcoUniversal (F : C ⥤ D) (G : D.obj → C.obj)
-  (p : ∀ A, coUniversal F A (G A)) : F ⊣ coUniversal.right_adjoint p :=
+def Adjunction.ofCoUniversal (F : C ⥤ D) (G : D.obj → C.obj)
+  (p : ∀ A, CoUniversal F A (G A)) : F ⊣ CoUniversal.right_adjoint p :=
   NatIso.ofComponents
     ⟨fun (X, A) => (p A).hom·X, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := coUniversal.factorization (p A) _ (h ○ F[f])
+      have q₀ := (CoUniversal.data (p A)).factorization (h ○ F[f])
+      simp [CoUniversal.data] at q₀
       have q₁ := congrFun ((p B).hom.naturality ((p A)·X h ○[C] f)) (g ○ (p A)⁻¹·(G A) (𝟙))
       have q₂ := congrFun ((p A).hom.naturality f) h
       simp at q₂
@@ -339,7 +348,7 @@ abbrev Adjunction.Universal (X : C.obj) : Universal G X F[X] where
     app Y := φ⁻¹·(X, Y),
     naturality f := by simpa using φ.inv·(X, –).naturality f}
 
-abbrev Adjunction.coUniversal (A : D.obj) : coUniversal F A G[A] where
+abbrev Adjunction.CoUniversal (A : D.obj) : CoUniversal F A G[A] where
   hom := {
     app B := φ·(B, A),
     naturality f := by simpa using φ.hom·(–, A).naturality f}

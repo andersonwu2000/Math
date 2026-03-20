@@ -6,7 +6,6 @@ import MATH.Category.Structure.ProductCat
 Bifunctor 操作。
 
 ## 定義
-### `BiFunctor`
 - `.fix_left` / `.fix_right` — 固定一側 `F[X, –]`、`F[–, Y]`
 - `.hom_left` / `.hom_right` — 固定一側的 natural transformation
 - `.comp_left` / `.comp_right` / `.comp_both` — 與 functor 合成

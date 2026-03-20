@@ -1,8 +1,5 @@
 import MATH.Category.Functor.FullyFaithful
 
--- set_option trace.Meta.synthInstance true
--- set_option profiler true
-
 /-!
 # Morphism/PreserveReflect.lean
 
@@ -12,10 +9,12 @@ Functor 保持與反射 morphism 性質。
 ### `Preserve`
 - `.IsSplitMono` / `.IsSplitEpi` / `.IsIso` — functor 保持 split mono/epi、iso
 - `.Iso` — `X ≅ Y → F[X] ≅ F[Y]`
+- `.NatIso` — `G ≅ H → F ○ G ≅ F ○ H`
 ### `Reflect`
 - `.IsMono` / `.IsEpi` — faithful functor 反射 mono/epi
 - `.IsSplitMono` / `.IsSplitEpi` / `.IsIso` — fully faithful 反射
 - `.Iso` — `F[X] ≅ F[Y] → X ≅ Y`（fully faithful）
+- `.NatIso` — `F ○ G ≅ F ○ H → G ≅ H`（fully faithful）
 -/
 
 namespace CategoryTheory
@@ -52,9 +51,19 @@ lemma Iso.hom (i : X ≅ Y) :
 lemma Iso.inv (i : X ≅ Y) :
   (Iso F i).inv = F[i.inv] := rfl
 
+/-- `G ≅ H → F ○ G ≅ F ○ H` -/
+def NatIso (α : G ≅[⟦B, C⟧] H) : F ○[Cat] G ≅[⟦B, D⟧] F ○[Cat] H where
+  hom := { app b := F[α.hom·b], naturality f := NatTrans.functor_naturality F α.hom f }
+  inv := { app b := F[α.inv·b], naturality f := NatTrans.functor_naturality F α.inv f }
+  hom_inv_id := by ext b; simp [← Functor.map_comp]
+  inv_hom_id := by ext b; simp [← Functor.map_comp]
+
 end Preserve
 
+-- ─── Reflect ──────────────────────────────────────────────────────────────────
+
 namespace Reflect
+
 lemma IsMono
   [F.Faithful] [p : F[f].IsMono] : f.IsMono where
   right_uni {_ g h} _ :=
@@ -92,6 +101,20 @@ def Iso [F.FullyFaithful] (i : F[X] ≅ F[Y]) : X ≅ Y where
   inv := F.preimage i.inv
   hom_inv_id := F.map_injective (by simp [F.map_preimage_id])
   inv_hom_id := F.map_injective (by simp [F.map_preimage_id])
+
+/-- `F ○ G ≅ F ○ H → G ≅ H`（fully faithful） -/
+noncomputable
+def NatIso [F.FullyFaithful] (α : F ○[Cat] G ≅[⟦B, D⟧] F ○[Cat] H) : G ≅[⟦B, C⟧] H where
+  hom := { app b := F.preimage (α.hom·b),
+            naturality f := F.map_injective (by
+              simp only [Functor.map_comp, F.map_preimage_id]
+              exact α.hom.naturality f) }
+  inv := { app b := F.preimage (α.inv·b),
+            naturality f := F.map_injective (by
+              simp only [Functor.map_comp, F.map_preimage_id]
+              exact α.inv.naturality f) }
+  hom_inv_id := by ext b; apply F.map_injective; simp [F.map_preimage_id]
+  inv_hom_id := by ext b; apply F.map_injective; simp [F.map_preimage_id]
 
 end Reflect
 end CategoryTheory

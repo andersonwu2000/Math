@@ -1,6 +1,8 @@
 import MATH.Category.Adjunction.Basic
 import MATH.Category.Functor.Const
-import MATH.Category.Limits.Canonical
+import MATH.Category.Limits.Basic
+
+universe u v
 
 /-!
 # Limits/Complete.lean
@@ -8,36 +10,56 @@ import MATH.Category.Limits.Canonical
 Complete category。
 
 ## 定義
-- `Complete C` — `C` 具有所有 limit：對任意 `J` 與 `F : J ⥤ C`，`F` 有 limit
-- `coComplete C` — `C` 具有所有 colimit：對任意 `J` 與 `F : J ⥤ C`，`F` 有 colimit
+- `Complete C` — 存在 limit functor `lim` 使得 `Δ ⊣ lim`
+- `ShapeComplete` — `C` 對 shape `J` 的所有 functor 都有 limit
+- `CoComplete C` — 存在 colimit functor `colim` 使得 `colim ⊣ Δ`
+- `ShapeCoComplete` — colimit 版本
 
 ## 定理
-- `Types.complete` — `Types` 是 complete，`lim F ≅ Hom[Δᵒᵖ[PUnit], F]`
-- `Limit.prop` — `Hom[Δᵒᵖ–, F] ≅ lim Hom[–, F–]`（natural in X）
-- `coLimit.prop` — `Hom[F, Δᵒᵖ–] ≅ lim Hom[F–, –]`（natural in X）
+### `Complete` / `ShapeComplete`
+- `.instShapeComplete` — `Complete C` ⟹ `ShapeComplete J C`（由 `Δ ⊣ lim` 推導）
+- `.instLimit` — `ShapeComplete J C` ⟹ `Limit F`
+### `CoComplete` / `ShapeCoComplete`
+- `.instShapeCoComplete` — `CoComplete C` ⟹ `ShapeCoComplete J C`（由 `colim ⊣ Δ` 推導）
+- `.instCoLimit` — `ShapeCoComplete J C` ⟹ `CoLimit F`
 -/
 
 namespace CategoryTheory
 
-/-- `Complete C`：對任意 small index category `J` 和函子 `F : J ⥤ C`，`F` 有 limit -/
+/-- `Complete C`：存在 limit functor `lim : ⟦J, C⟧ ⥤ C` 使得 `Δ ⊣ lim` -/
 class Complete (C : Category) where
   lim {J : Category.{u, v}} : ⟦J, C⟧ ⥤ C
   adj {J : Category.{u, v}} : Δ ⊣[C, ⟦J, C⟧] lim
 
-/-- `coComplete C`：對任意 small index category `J` 和函子 `F : J ⥤ C`，`F` 有 colimit -/
-class coComplete (C : Category) where
-  hascoLimit {J : Category.{u, v}} (F : J ⥤ C) : HascoLimit F
+/-- `C` 對 shape `J` 的所有 functor 都有 limit -/
+class ShapeComplete (J C : Category) where
+  hasLimit (F : J ⥤ C) : Limit F
 
-/-! ### Types 是 complete 的
+/-- `Complete C` 蘊含 `ShapeComplete J C`：`lim[F]` 是 `F` 的 limit -/
+instance (priority := 100) Complete.instShapeComplete
+    [h : Complete.{u, v} C] {J : Category.{u, v}} : ShapeComplete J C where
+  hasLimit F := { lim := h.lim[F], universal := h.adj.CoUniversal F }
 
-Note.tex 證明：`Hom[1, F–] ≅ F`，由 Canonical 得
-`Hom[Δᵒᵖ[1], F] ≅ lim Hom[1, F–] ≅ lim F`。
-直接用 `Hom[PUnit, F–] ≅ F` 與 `Canonical.HasLimit` 轉移 limit。 -/
+instance (priority := 100) ShapeComplete.instLimit
+    [h : ShapeComplete J C] {F : J ⥤ C} : Limit F :=
+  h.hasLimit F
 
-/-- `Types` 是 complete：`lim F = NatTrans (Δ[PUnit]) F` -/
-noncomputable instance Types.complete : Complete Types where
-  lim {J : Category} : ⟦J, Types⟧ ⥤ Types :=
-    Hom[(Δ[PUnit] : J ⥤ Types), –]
-  adj := sorry
+/-- `CoComplete C`：存在 colimit functor `colim : ⟦J, C⟧ ⥤ C` 使得 `colim ⊣ Δ` -/
+class CoComplete (C : Category) where
+  colim {J : Category.{u, v}} : ⟦J, C⟧ ⥤ C
+  adj {J : Category.{u, v}} : colim ⊣[⟦J, C⟧, C] Δ
+
+/-- `C` 對 shape `J` 的所有 functor 都有 colimit -/
+class ShapeCoComplete (J C : Category) where
+  hascolimit (F : J ⥤ C) : CoLimit F
+
+/-- `CoComplete C` 蘊含 `ShapeCoComplete J C`：`colim[F]` 是 `F` 的 colimit -/
+instance (priority := 100) CoComplete.instShapeCoComplete
+    [h : CoComplete.{u, v} C] {J : Category.{u, v}} : ShapeCoComplete J C where
+  hascolimit F := { colim := h.colim[F], universal := h.adj.Universal F }
+
+instance (priority := 100) ShapeCoComplete.instCoLimit
+    [h : ShapeCoComplete J C] {F : J ⥤ C} : CoLimit F :=
+  h.hascolimit F
 
 end CategoryTheory

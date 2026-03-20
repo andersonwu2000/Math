@@ -2,12 +2,12 @@ import Mathlib.Init
 import Aesop
 
 /-!
-## Tactic/Init.lean
+# Tactic/Init.lean
 
-本檔案定義 category theory 自動化證明的基礎策略：
+Category theory 自動化證明的基礎策略。
 
-- `aesop_cat`：自動證明 category theory 等式的 tactic macro，
-  依序嘗試 `apply_rfl`、`aesop`（使用 `CategoryTheory` rule set）、`simp`。
+## 定義
+- `aesop_cat` — 自動證明 category theory 等式的 tactic macro
 -/
 
 -- 宣告 `CategoryTheory` 的 aesop rule set，供 `aesop_cat` 使用

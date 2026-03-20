@@ -1,5 +1,4 @@
 import MATH.Category.Yoneda
-import MATH.Category.Functor.Currying
 import MATH.Category.Morphism.PreserveReflect
 
 /-!
@@ -24,36 +23,21 @@ variable {C : Category} {X Y : C.obj}
 
 /-- `X ≅ Y → Hom[X, –] ≅ Hom[Y, –]` -/
 def Hom.preserve_iso_left (iso : X ≅ Y) : Hom[X, –] ≅ Hom[Y, –] :=
-  Preserve.Iso curry[Hom] iso.op
+  Preserve.Iso CoYoneda iso.op
 
 /-- `X ≅ Y → Hom[–, X] ≅ Hom[–, Y]` -/
 def Hom.preserve_iso_right (iso : X ≅ Y) : Hom[–, X] ≅ Hom[–, Y] :=
-  Preserve.Iso curry[Hom.swap] iso
+  Preserve.Iso Yoneda iso
 
 /-- `Hom[X, –] ≅ Hom[Y, –] → X ≅ Y`（Yoneda reflection） -/
-def Hom.reflect_iso_left (iso : Hom[X, –] ≅ Hom[Y, –]) : X ≅ Y where
-  hom := iso⁻¹·Y (𝟙 Y)
-  inv := iso·X (𝟙 X)
-  inv_hom_id := by
-    let p := congrFun (iso.hom.naturality (iso·X (𝟙 X))) (iso⁻¹·Y (𝟙 Y))
-    simp only [eq_1, ProductCat_obj, Category.id_comp, Function.comp_apply,
-      NatIso.inv_hom_id_app_apply] at p
-    exact Types.Iso.injective p
-  hom_inv_id := by
-    let p := congrFun (iso.hom.naturality (iso⁻¹·Y (𝟙 Y))) (𝟙 X)
-    simpa using p.symm
+noncomputable
+def Hom.reflect_iso_left (iso : Hom[X, –] ≅ Hom[Y, –]) : X ≅ Y :=
+  (Reflect.Iso CoYoneda iso).op
 
 /-- `Hom[–, X] ≅ Hom[–, Y] → X ≅ Y` -/
-def Hom.reflect_iso_right (iso : Hom[–, X] ≅ Hom[–, Y]) : X ≅ Y where
-  hom := iso·X (𝟙 X)
-  inv := iso⁻¹·Y (𝟙 Y)
-  inv_hom_id := by
-    let p := congrFun (iso.hom.naturality (iso·X (𝟙 X))) (iso⁻¹·Y (𝟙 Y))
-    simp only [eq_1, ProductCat_obj, Category.comp_id, Function.comp_apply,
-      NatIso.inv_hom_id_app_apply] at p
-    exact Types.Iso.injective p
-  hom_inv_id := by
-    simpa using (congrFun (iso.hom.naturality (iso⁻¹·Y (𝟙 Y))) (𝟙 X)).symm
+noncomputable
+def Hom.reflect_iso_right (iso : Hom[–, X] ≅ Hom[–, Y]) : X ≅ Y :=
+  Reflect.Iso Yoneda iso
 
 
 variable {F G : C ⥤ D}

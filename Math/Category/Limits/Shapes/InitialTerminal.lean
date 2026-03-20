@@ -16,11 +16,13 @@ Initial / terminal object：空圖的 colimit / limit。
 ### `Initial`
 - `.data` — `Initial` ⟹ `InitialData`
 - `.unique` — initial object 在 iso 下唯一
+- `ShapeCoComplete.instInitial` — `ShapeCoComplete` ⟹ `Initial`
 ### `InitialData`
 - `.toInitial` — `InitialData` ⟹ `Initial`
 ### `Terminal`
 - `.data` — `Terminal` ⟹ `TerminalData`
 - `.unique` — terminal object 在 iso 下唯一
+- `ShapeComplete.instTerminal` — `ShapeComplete` ⟹ `Terminal`
 ### `TerminalData`
 - `.toTerminal` — `TerminalData` ⟹ `Terminal`
 -/
@@ -30,7 +32,7 @@ namespace CategoryTheory
 variable (C : Category)
 
 /-- `Initial C`：C 有 initial object，即空圖的 colimit -/
-class Initial extends CoLimit (emptyFunctor C)
+class Initial extends @CoLimit EmptyCat.{0} C (emptyFunctor C)
 
 /-- `Terminal C`：C 有 terminal object，即空圖的 limit -/
 class Terminal extends @Limit EmptyCat.{0} C (emptyFunctor C)
@@ -47,27 +49,6 @@ structure TerminalData where
   map X : X ⟶ obj
   map_unique (f : X ⟶ obj) : f = map X
 
--- ─── Initial ──────────────────────────────────────────────────────────────────
-
-namespace Initial
-
-/-- `Initial` ⟹ `InitialData` -/
-noncomputable def data (h : Initial C) : InitialData C :=
-  let cd := CoLimit.data (⟨h.colim, h.universal⟩ : CoLimit _)
-  { obj       := h.colim
-    map Y     := cd.desc (emptyNatTrans _ _)
-    map_unique f := cd.desc_unique _ f (fun j => PEmpty.elim j) }
-
-/-- Initial object 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Initial C) : h₁.colim ≅ h₂.colim :=
-  let d₁ := h₁.data; let d₂ := h₂.data
-  { hom := d₁.map h₂.colim
-    inv := d₂.map h₁.colim
-    hom_inv_id := (d₁.map_unique _).symm.trans (d₁.map_unique _)
-    inv_hom_id := (d₂.map_unique _).symm.trans (d₂.map_unique _) }
-
-end Initial
-
 /-- `InitialData` ⟹ `Initial` -/
 @[reducible]
 noncomputable def InitialData.toInitial (id : InitialData C) : Initial C where
@@ -80,27 +61,6 @@ noncomputable def InitialData.toInitial (id : InitialData C) : Initial C where
     desc_unique _ k _ := id.map_unique k
   }).universal
 
--- ─── Terminal ─────────────────────────────────────────────────────────────────
-
-namespace Terminal
-
-/-- `Terminal` ⟹ `TerminalData` -/
-noncomputable def data (h : Terminal C) : TerminalData C :=
-  let ld := Limit.data (⟨h.lim, h.universal⟩ : Limit _)
-  { obj       := h.lim
-    map X     := ld.lift (emptyNatTrans _ _)
-    map_unique f := ld.lift_unique _ f (fun j => PEmpty.elim j) }
-
-/-- Terminal object 在 isomorphism 下唯一 -/
-noncomputable def unique (h₁ h₂ : Terminal C) : h₁.lim ≅ h₂.lim :=
-  let d₁ := h₁.data; let d₂ := h₂.data
-  { hom := d₂.map h₁.lim
-    inv := d₁.map h₂.lim
-    hom_inv_id := (d₂.map_unique _).symm.trans (d₂.map_unique _)
-    inv_hom_id := (d₁.map_unique _).symm.trans (d₁.map_unique _) }
-
-end Terminal
-
 /-- `TerminalData` ⟹ `Terminal` -/
 @[reducible]
 noncomputable def TerminalData.toTerminal (td : TerminalData C) : Terminal C where
@@ -112,5 +72,49 @@ noncomputable def TerminalData.toTerminal (td : TerminalData C) : Terminal C whe
     lift_π _ j       := PEmpty.elim j
     lift_unique _ k _ := td.map_unique k
   }).universal
+
+-- ─── Initial ──────────────────────────────────────────────────────────────────
+
+namespace Initial
+
+/-- `Initial` ⟹ `InitialData` -/
+noncomputable def data (h : Initial C) : InitialData C :=
+  let cd := CoLimit.data (⟨h.colim, h.universal⟩ : CoLimit _)
+  { obj       := h.colim
+    map _     := cd.desc (emptyNatTrans _ _)
+    map_unique f := cd.desc_unique _ f (fun j => PEmpty.elim j) }
+
+/-- Initial object 在 isomorphism 下唯一 -/
+noncomputable def unique (h₁ h₂ : Initial C) : h₁.colim ≅ h₂.colim :=
+  Universal.unique h₁.universal h₂.universal
+
+instance (priority := 100) ShapeCoComplete.instInitial
+    [h : @ShapeCoComplete EmptyCat.{0} C] : Initial C where
+  colim := (h.hascolimit (emptyFunctor C)).colim
+  universal := (h.hascolimit (emptyFunctor C)).universal
+
+end Initial
+
+-- ─── Terminal ─────────────────────────────────────────────────────────────────
+
+namespace Terminal
+
+/-- `Terminal` ⟹ `TerminalData` -/
+noncomputable def data (h : Terminal C) : TerminalData C :=
+  let ld := Limit.data (⟨h.lim, h.universal⟩ : Limit _)
+  { obj       := h.lim
+    map _     := ld.lift (emptyNatTrans _ _)
+    map_unique f := ld.lift_unique _ f (fun j => PEmpty.elim j) }
+
+/-- Terminal object 在 isomorphism 下唯一 -/
+noncomputable def unique (h₁ h₂ : Terminal C) : h₁.lim ≅ h₂.lim :=
+  CoUniversal.unique h₁.universal h₂.universal
+
+instance (priority := 100) ShapeComplete.instTerminal
+    [h : @ShapeComplete EmptyCat.{0} C] : Terminal C where
+  lim := (h.hasLimit (emptyFunctor C)).lim
+  universal := (h.hasLimit (emptyFunctor C)).universal
+
+end Terminal
 
 end CategoryTheory

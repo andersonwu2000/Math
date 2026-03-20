@@ -7,6 +7,7 @@ Horizontal composition 與 whiskering。
 
 ## 定義
 - `HorizontalComp` — horizontal composition `β ◫ α : H ○ F ⇒ K ○ G`
+- `Transformation.HorizontalFunctor` — horizontal composition functor `⟦D, E⟧ × ⟦C, D⟧ ⥤ ⟦C, E⟧`
 - `Whisker.Functor_NatTrans` — 右 whiskering `H ◫ α`
 - `Whisker.NatTrans_Functor` — 左 whiskering `β ◫ F`
 

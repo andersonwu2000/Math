@@ -30,9 +30,10 @@ notation:30 F " ⇒ " G => NatTrans F G
 notation:max α "·" X:max => app α X
 attribute [simp, grind =, grind _=_] naturality
 
-@[simp]
-lemma congr_app (α β : F ⇒ G) (h : α = β) : ∀ X, α·X = β·X :=
-  fun _ => h ▸ rfl
+variable {C D : Category} {F G : C ⥤ D}
+
+lemma congr_app {α β : F ⇒ G} (h : α = β) (X : C.obj) : α·X = β·X :=
+  h ▸ rfl
 
 @[simp, grind _=_]
 lemma functor_naturality
