@@ -7,20 +7,22 @@ import MATH.Category.Functor.Const
 Limit / colimit。
 
 ## 定義
-- `Limit F` — `F` 有 limit，即 `Hom[Δᵒᵖ–, F] ≅ Hom[–, obj]`
-- `CoLimit F` — `F` 有 colimit，即 `Hom[obj, –] ≅ Hom[F, Δ–]`
+- `Limit F` — `F` 有 limit（extends `CoUniversal Δ F`）
+- `CoLimit F` — `F` 有 colimit（extends `Universal Δ F`）
 - `LimitData F` — limit cone `cone`、universal `lift`
 - `CoLimitData F` — colimit cocone `cocone`、universal `desc`
 
 ## 定理
 ### `Limit`
-- `.universal` — instance：`Limit F` ⟹ `CoUniversal Δ F`
 - `.data` — `Limit` ⟹ `LimitData`
 - `.unique` — limit 在 iso 下唯一
+- `.ofNatIso` — `F ≅ G → Limit F → Limit G`
+- `.ofObjIso` — `obj ≅ B → Limit F → Limit F`（改 limit object）
 ### `CoLimit`
-- `.universal` — instance：`CoLimit F` ⟹ `Universal Δ F`
 - `.data` — `CoLimit` ⟹ `CoLimitData`
 - `.unique` — colimit 在 iso 下唯一
+- `.ofNatIso` — `F ≅ G → CoLimit F → CoLimit G`
+- `.ofObjIso` — `obj ≅ B → CoLimit F → CoLimit F`（改 colimit object）
 ### `LimitData`
 - `.toLimit` — `LimitData` ⟹ `Limit`
 ### `CoLimitData`
@@ -29,15 +31,11 @@ Limit / colimit。
 
 namespace CategoryTheory
 
-/-- `Limit F`：`F` 有 limit，即 `Hom[Δᵒᵖ–, F] ≅ Hom[–, obj]` -/
-class Limit (F : J ⥤ C) where
-  obj : C.obj
-  rep : Hom[Δᵒᵖ–, F] ≅ Hom[–, obj]
+/-- `Limit F`：`F` 有 limit -/
+class Limit (F : J ⥤ C) extends CoUniversal Δ F
 
-/-- `CoLimit F`：`F` 有 colimit，即 `Hom[obj, –] ≅ Hom[F, Δ–]` -/
-class CoLimit (F : J ⥤ C) where
-  obj : C.obj
-  rep : Hom[obj, –] ≅ Hom[F, Δ–]
+/-- `CoLimit F`：`F` 有 colimit -/
+class CoLimit (F : J ⥤ C) extends Universal Δ F
 
 -- ─── LimitData / CoLimitData ──────────────────────────────────────────────────
 
@@ -61,74 +59,78 @@ structure CoLimitData (F : J ⥤ C) where
 
 -- ─── Limit ────────────────────────────────────────────────────────────────────
 
-/-- `Limit F` ⟹ `CoUniversal Δ F` -/
-instance Limit.universal [h : Limit F] : CoUniversal Δ F where
-  obj := h.obj
-  rep := h.rep
-
 /-- `Limit` ⟹ `LimitData` -/
 @[reducible]
-noncomputable def Limit.data [Limit F] : LimitData F where
-  obj      := Limit.universal.data.obj
-  cone     := Limit.universal.data.morphism
-  lift φ   := Limit.universal.data.factor φ
-  lift_π φ j := by simpa using (NatTrans.congr_app (Limit.universal.data.factorization φ) j).symm
-  lift_unique φ k hk :=
-    Limit.universal.data.factor_unique φ k (by ext j; simpa using (hk j).symm)
+noncomputable def Limit.data [h : Limit F] : LimitData F :=
+  let d := h.toCoUniversal.data
+  { obj      := d.obj
+    cone     := d.morphism
+    lift φ   := d.factor φ
+    lift_π φ j := by simpa using (NatTrans.congr_app (d.factorization φ) j).symm
+    lift_unique φ k hk :=
+      d.factor_unique φ k (by ext j; simpa using (hk j).symm) }
 
 /-- `LimitData` ⟹ `Limit` -/
 instance LimitData.toLimit {F : J ⥤ C} (l : LimitData F) : Limit F :=
-  let u := CoUniversalData.toCoUniversal {
-    obj             := l.obj
-    morphism        := l.cone
-    factor          := l.lift
-    factorization φ := by ext j; simpa using (l.lift_π φ j).symm
-    factor_unique φ k hk := l.lift_unique φ k fun j => by
-      simpa using (NatTrans.congr_app hk j).symm
-  }
-  { obj := u.obj, rep := u.rep }
+  { toCoUniversal := CoUniversalData.toCoUniversal {
+      obj             := l.obj
+      morphism        := l.cone
+      factor          := l.lift
+      factorization φ := by ext j; simpa using (l.lift_π φ j).symm
+      factor_unique φ k hk := l.lift_unique φ k fun j => by
+        simpa using (NatTrans.congr_app hk j).symm } }
 
 /-- Limit 在 iso 下唯一 -/
 noncomputable def Limit.unique
     {F : J ⥤ C} (h₁ h₂ : Limit F) : h₁.obj ≅ h₂.obj :=
-  let u₁ : CoUniversal Δ F := Limit.universal (h := h₁)
-  let u₂ : CoUniversal Δ F := Limit.universal (h := h₂)
-  CoUniversal.unique u₁ u₂
+  CoUniversal.unique h₁.toCoUniversal h₂.toCoUniversal
+
+/-- 沿 functor 的 natural isomorphism 轉移 -/
+@[reducible]
+def Limit.ofNatIso (h : Limit F) (iso : F ≅ G) : Limit G :=
+  { toCoUniversal := h.toCoUniversal.ofIso iso }
+
+/-- 沿 limit object 的 isomorphism 轉移 -/
+@[reducible]
+def Limit.ofObjIso (h : Limit F) (iso : h.obj ≅ B) : Limit F :=
+  { toCoUniversal := h.toCoUniversal.ofObjIso iso }
 
 -- ─── CoLimit ──────────────────────────────────────────────────────────────────
 
-/-- `CoLimit F` ⟹ `Universal Δ F` -/
-instance CoLimit.universal [h : CoLimit F] : Universal Δ F where
-  obj := h.obj
-  rep := h.rep
-
 /-- `CoLimit` ⟹ `CoLimitData` -/
 @[reducible]
-noncomputable def CoLimit.data [CoLimit F] : CoLimitData F where
-  obj    := CoLimit.universal.data.obj
-  cocone := CoLimit.universal.data.morphism
-  desc φ := CoLimit.universal.data.factor φ
-  desc_ι φ j := by simpa using (NatTrans.congr_app (CoLimit.universal.data.factorization φ) j).symm
-  desc_unique φ k hk :=
-    CoLimit.universal.data.factor_unique φ k (by ext j; simpa using (hk j).symm)
+noncomputable def CoLimit.data [h : CoLimit F] : CoLimitData F :=
+  let d := h.toUniversal.data
+  { obj    := d.obj
+    cocone := d.morphism
+    desc φ := d.factor φ
+    desc_ι φ j := by simpa using (NatTrans.congr_app (d.factorization φ) j).symm
+    desc_unique φ k hk :=
+      d.factor_unique φ k (by ext j; simpa using (hk j).symm) }
 
 /-- `CoLimitData` ⟹ `CoLimit` -/
 instance CoLimitData.toCoLimit {F : J ⥤ C} (l : CoLimitData F) : CoLimit F :=
-  let u := UniversalData.toUniversal {
-    obj             := l.obj
-    morphism        := l.cocone
-    factor          := l.desc
-    factorization φ := by ext j; simpa using (l.desc_ι φ j).symm
-    factor_unique φ k hk := l.desc_unique φ k fun j => by
-      simpa using (NatTrans.congr_app hk j).symm
-  }
-  { obj := u.obj, rep := u.rep }
+  { toUniversal := UniversalData.toUniversal {
+      obj             := l.obj
+      morphism        := l.cocone
+      factor          := l.desc
+      factorization φ := by ext j; simpa using (l.desc_ι φ j).symm
+      factor_unique φ k hk := l.desc_unique φ k fun j => by
+        simpa using (NatTrans.congr_app hk j).symm } }
 
 /-- CoLimit 在 iso 下唯一 -/
 noncomputable def CoLimit.unique
     {F : J ⥤ C} (h₁ h₂ : CoLimit F) : h₁.obj ≅ h₂.obj :=
-  let u₁ : Universal Δ F := CoLimit.universal (h := h₁)
-  let u₂ : Universal Δ F := CoLimit.universal (h := h₂)
-  Universal.unique u₁ u₂
+  Universal.unique h₁.toUniversal h₂.toUniversal
+
+/-- 沿 functor 的 natural isomorphism 轉移 -/
+@[reducible]
+def CoLimit.ofNatIso (h : CoLimit F) (iso : F ≅ G) : CoLimit G :=
+  { toUniversal := h.toUniversal.ofIso iso }
+
+/-- 沿 colimit object 的 isomorphism 轉移 -/
+@[reducible]
+def CoLimit.ofObjIso (h : CoLimit F) (iso : h.obj ≅ B) : CoLimit F :=
+  { toUniversal := h.toUniversal.ofObjIso iso }
 
 end CategoryTheory

@@ -2,7 +2,7 @@ import Lean
 import MATH.Category.Basic
 
 /-!
-## Tactic/Reassoc.lean
+# Tactic/Reassoc.lean
 
 本檔案定義 `@[reassoc]` attribute：
 

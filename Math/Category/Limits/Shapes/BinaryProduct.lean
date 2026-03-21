@@ -19,12 +19,14 @@ Binary product / coproduct：兩個 object 的 product / coproduct。
 ### `BinaryProduct`
 - `.data` — `BinaryProduct` ⟹ `BinaryProductData`
 - `.unique` — binary product 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ X → BinaryProduct A B → BinaryProduct A B`（改 product object）
 - `ShapeComplete.BinaryProduct` — `ShapeComplete` ⟹ `BinaryProduct`
 ### `BinaryProductData`
 - `.toBinaryProduct` — `BinaryProductData` ⟹ `BinaryProduct`
 ### `BinaryCoproduct`
 - `.data` — `BinaryCoproduct` ⟹ `BinaryCoproductData`
 - `.unique` — binary coproduct 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ X → BinaryCoproduct A B → BinaryCoproduct A B`（改 coproduct object）
 - `ShapeCoComplete.BinaryCoproduct` — `ShapeCoComplete` ⟹ `BinaryCoproduct`
 ### `BinaryCoproductData`
 - `.toBinaryCoproduct` — `BinaryCoproductData` ⟹ `BinaryCoproduct`
@@ -89,6 +91,11 @@ noncomputable def data [h : BinaryProduct A B] : BinaryProductData A B :=
 noncomputable def unique (h₁ h₂ : BinaryProduct A B) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
+/-- 沿 binary product object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : BinaryProduct A B) (iso : h.obj ≅ X) : BinaryProduct A B :=
+  { toLimit := h.toLimit.ofObjIso iso }
+
 instance (priority := 100) ShapeComplete.BinaryProduct
     [h : ShapeComplete (DiscreteCat Bool) C] : BinaryProduct A B where
   obj := (h.hasLimit (discreteFunctor (BinaryFamily A B))).obj
@@ -137,6 +144,11 @@ noncomputable def data [h : BinaryCoproduct A B] : BinaryCoproductData A B :=
 /-- Binary coproduct 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : BinaryCoproduct A B) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
+
+/-- 沿 binary coproduct object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : BinaryCoproduct A B) (iso : h.obj ≅ X) : BinaryCoproduct A B :=
+  { toCoLimit := h.toCoLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeCoComplete.BinaryCoproduct
     [h : ShapeCoComplete (DiscreteCat Bool) C] : BinaryCoproduct A B where

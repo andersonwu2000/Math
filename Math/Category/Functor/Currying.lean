@@ -1,7 +1,5 @@
 import MATH.Category.Functor.BiFunctor
 
-namespace CategoryTheory
-
 /-!
 # Functor/Currying.lean
 
@@ -16,6 +14,8 @@ Currying / uncurrying functor 及其互為逆的 natural isomorphism。
 - `.uncurry_curry_iso` — `uncurry (curry F) ≅ F`
 - `.curry_uncurry_iso` — `curry (uncurry G) ≅ G`
 -/
+
+namespace CategoryTheory
 
 /-- Currying：`curry[F][X] = F[X, –]` -/
 abbrev curry : ⟦C × D, E⟧ ⥤ ⟦C, ⟦D, E⟧⟧ where
@@ -35,7 +35,7 @@ abbrev uncurry : ⟦C, ⟦D, E⟧⟧ ⥤ ⟦C × D, E⟧ where
 
 namespace Currying
 
-/-! ### 計算 lemma -/
+-- ─── 計算 lemma ──────────────────────────────────────────────────────────────
 
 @[simp]
 lemma curry_obj_obj (F : C × D ⥤ E) (X : C.obj) (Y : D.obj) :
@@ -61,7 +61,7 @@ lemma uncurry_obj_map (G : C ⥤ ⟦D, E⟧) {p q : (C × D).obj} (m : p ⟶ q) 
 lemma uncurry_map_app {F G : C ⥤ ⟦D, E⟧} (α : F ⇒ G) (X : C.obj) (Y : D.obj) :
     uncurry[α]·(X, Y) = (α·X)·Y := rfl
 
-/-! ### 來回 isomorphism -/
+-- ─── 來回 isomorphism ────────────────────────────────────────────────────────
 
 /-- `uncurry (curry F) ≅ F` -/
 def uncurry_curry_iso (F : C × D ⥤ E) : uncurry[curry[F]] ≅[⟦C × D, E⟧] F where

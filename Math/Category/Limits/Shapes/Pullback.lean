@@ -18,12 +18,14 @@ Pullback / pushout：cospan / span 圖的 limit / colimit。
 ### `Pullback`
 - `.data` — `Pullback` ⟹ `PullbackData`
 - `.unique` — pullback 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ Y → Pullback f g → Pullback f g`（改 pullback object）
 - `ShapeComplete.Pullback` — `ShapeComplete` ⟹ `Pullback`
 ### `PullbackData`
 - `.toPullback` — `PullbackData` ⟹ `Pullback`
 ### `Pushout`
 - `.data` — `Pushout` ⟹ `PushoutData`
 - `.unique` — pushout 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ Y → Pushout f g → Pushout f g`（改 pushout object）
 - `ShapeCoComplete.Pushout` — `ShapeCoComplete` ⟹ `Pushout`
 ### `PushoutData`
 - `.toPushout` — `PushoutData` ⟹ `Pushout`
@@ -103,6 +105,11 @@ noncomputable def data [h : Pullback f g] : PullbackData f g :=
 /-- Pullback 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : Pullback f g) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
+
+/-- 沿 pullback object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : Pullback f g) (iso : h.obj ≅ Y) : Pullback f g :=
+  { toLimit := h.toLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeComplete.Pullback
     [h : ShapeComplete WalkingCospanCat C] : Pullback f g where
@@ -186,6 +193,11 @@ noncomputable def data [h : Pushout f g] : PushoutData f g :=
 /-- Pushout 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : Pushout f g) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
+
+/-- 沿 pushout object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : Pushout f g) (iso : h.obj ≅ Y) : Pushout f g :=
+  { toCoLimit := h.toCoLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeCoComplete.Pushout
     [h : ShapeCoComplete WalkingSpanCat C] : Pushout f g where

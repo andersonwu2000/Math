@@ -18,12 +18,14 @@ Equalizer / coequalizer：parallel pair 圖的 limit / colimit。
 ### `Equalizer`
 - `.data` — `Equalizer` ⟹ `EqualizerData`
 - `.unique` — equalizer 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ Y → Equalizer f g → Equalizer f g`（改 equalizer object）
 - `ShapeComplete.Equalizer` — `ShapeComplete` ⟹ `Equalizer`
 ### `EqualizerData`
 - `.toEqualizer` — `EqualizerData` ⟹ `Equalizer`
 ### `CoEqualizer`
 - `.data` — `CoEqualizer` ⟹ `CoEqualizerData`
 - `.unique` — coequalizer 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ Y → CoEqualizer f g → CoEqualizer f g`（改 coequalizer object）
 - `ShapeCoComplete.CoEqualizer` — `ShapeCoComplete` ⟹ `CoEqualizer`
 ### `CoEqualizerData`
 - `.toCoEqualizer` — `CoEqualizerData` ⟹ `CoEqualizer`
@@ -94,6 +96,11 @@ noncomputable def data [h : Equalizer f g] : EqualizerData f g :=
 /-- Equalizer 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : Equalizer f g) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
+
+/-- 沿 equalizer object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : Equalizer f g) (iso : h.obj ≅ Y) : Equalizer f g :=
+  { toLimit := h.toLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeComplete.Equalizer
     [h : ShapeComplete WalkingParallelPairCat C] : Equalizer f g where
@@ -168,6 +175,11 @@ noncomputable def data [h : CoEqualizer f g] : CoEqualizerData f g :=
 /-- CoEqualizer 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : CoEqualizer f g) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
+
+/-- 沿 coequalizer object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : CoEqualizer f g) (iso : h.obj ≅ Y) : CoEqualizer f g :=
+  { toCoLimit := h.toCoLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeCoComplete.CoEqualizer
     [h : ShapeCoComplete WalkingParallelPairCat C] : CoEqualizer f g where

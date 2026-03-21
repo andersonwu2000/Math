@@ -81,6 +81,19 @@ noncomputable def unique (h₁ h₂ : Representable F) :
     h₁.obj ≅ h₂.obj :=
   Hom.reflect_iso_left (Iso.trans h₁.rep h₂.rep.symm)
 
+/-- 沿 Iso 轉移 representing object：`X ≅ Y → Representable Hom[X, –] → Representable Hom[Y, –]` -/
+@[reducible]
+def ofIso (iso : X ≅[C] Y) [h : Representable Hom[X, –]] :
+    Representable Hom[Y, –] where
+  obj := h.obj
+  rep := Iso.trans h.rep (Hom.preserve_iso_left iso)
+
+/-- 沿 NatIso 轉移：`F ≅ G → Representable F → Representable G` -/
+@[reducible]
+def ofNatIso [h : Representable F] (iso : F ≅ G) : Representable G where
+  obj := h.obj
+  rep := Iso.trans h.rep iso
+
 end Representable
 
 /-- `RepresentableData` ⟹ `Representable` -/
@@ -101,6 +114,16 @@ def RepresentableData.toRepresentable
     inv_hom_id := by
       ext A f; simp only [Types]
       exact (rd.factor_unique _ f rfl).symm }
+
+/-- `Hom[Types.Terminal, –] ≅ 𝟙 Types`：PUnit represents the identity functor -/
+instance Representable.PreSheaf : Representable (𝟙[Cat] Types) :=
+  RepresentableData.toRepresentable {
+    obj := Types.Terminal
+    element := PUnit.unit
+    factor a := fun _ => a
+    factorization _ := rfl
+    factor_unique _ f hf := by funext ⟨⟩; exact hf
+  }
 
 -- ─── CoRepresentable ─────────────────────────────────────────────────────────
 
@@ -126,6 +149,19 @@ noncomputable def unique (h₁ h₂ : CoRepresentable F) :
     h₁.obj ≅ h₂.obj :=
   Hom.reflect_iso_right (Iso.trans h₁.rep.symm h₂.rep)
 
+/-- 沿 Iso 轉移 representing object：`X ≅ Y → CoRepresentable Hom[–, X] → CoRepresentable Hom[–, Y]` -/
+@[reducible]
+def ofIso (iso : X ≅[C] Y) [h : CoRepresentable Hom[–, X]] :
+    CoRepresentable Hom[–, Y] where
+  obj := h.obj
+  rep := Iso.trans (Hom.preserve_iso_right iso).symm h.rep
+
+/-- 沿 NatIso 轉移：`F ≅ G → CoRepresentable F → CoRepresentable G` -/
+@[reducible]
+def ofNatIso [h : CoRepresentable F] (iso : F ≅ G) : CoRepresentable G where
+  obj := h.obj
+  rep := Iso.trans iso.symm h.rep
+
 end CoRepresentable
 
 /-- `CoRepresentableData` ⟹ `CoRepresentable` -/
@@ -146,15 +182,5 @@ def CoRepresentableData.toCoRepresentable
     inv_hom_id := by
       ext A a; simp only [Types]
       exact rd.factorization a }
-
-/-- `Hom[Types.Terminal, –] ≅ 𝟙 Types`：PUnit represents the identity functor -/
-instance : Representable (𝟙[Cat] Types) :=
-  RepresentableData.toRepresentable {
-    obj := Types.Terminal
-    element := PUnit.unit
-    factor a := fun _ => a
-    factorization _ := rfl
-    factor_unique _ f hf := by funext ⟨⟩; exact hf
-  }
 
 end CategoryTheory

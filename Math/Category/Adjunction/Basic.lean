@@ -17,11 +17,10 @@ Adjunction 及其等價形式。
 ### `HomEquiv`
 - `.naturality_right_symm` — naturality（逆方向，右變量）
 - `.naturality_left_symm` — naturality（逆方向，左變量）
+- `.HomMate` — `HomEquiv` ⟹ `HomMate`
 
 ### `HomMate`
 - `.HomEquiv` — `HomMate` ⟹ `HomEquiv`
-### `HomEquiv`
-- `.HomMate` — `HomEquiv` ⟹ `HomMate`
 
 ### `Universal`
 - `.leftAdjoint` — 從 universal property 族構造左 adjoint
@@ -326,8 +325,8 @@ def Adjunction.ofUniversal (G : D ⥤ C)
     ⟨fun (X, A) => (p X).rep.hom·A, by
       intro (X, A) (Y, B) (f, g)
       ext h
-      have q₀ := Universal.data.factorization (Universal.rep.hom·A h)
-      have q₁ := congrFun (Universal.rep.hom.naturality (g ○ h)) (Universal.leftAdjoint p)[f]
+      have q₀ := Universal.data.factorization (Representable.rep.hom·A h)
+      have q₁ := congrFun (Representable.rep.hom.naturality (g ○ h)) (Universal.leftAdjoint p)[f]
       simp [Universal.data] at q₀ q₁
       simp [q₁]
       grind⟩
@@ -340,8 +339,9 @@ def Adjunction.ofCoUniversal (F : C ⥤ D)
     ⟨fun (X, A) => (p A).rep.hom·X, by
       intro (X, A) (Y, B) (f, g)
       ext h
+      letI : CoUniversal F A := p A
       have q₀ := CoUniversal.data.factorization h
-      have q₁ := congrFun (CoUniversal.rep.hom.naturality
+      have q₁ := congrFun ((p B).rep.hom.naturality
         (CoUniversal.data.factor h ○[C] f)) (g ○ CoUniversal.data.morphism)
       conv_lhs => rw [q₀]
       simpa using q₁⟩

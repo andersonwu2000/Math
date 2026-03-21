@@ -87,7 +87,7 @@ lemma η_triangle (e : AdjointEquivalence F G) (A : D.obj) :
     G[e.ε.hom·A] ○ e.η.hom·G[A] = 𝟙 := by
   simpa using e.toUnits.right_tri_id (f := 𝟙 G[A])
 
-/-! ### 方向 (2) → (3) -/
+-- ─── 方向 (2) → (3) ─────────────────────────────────────────────────────────
 
 /-- Adjoint equivalence 蘊含 essentially surjective -/
 instance essentiallySurjective (e : AdjointEquivalence F G) :
@@ -135,7 +135,7 @@ instance fullyFaithful (e : AdjointEquivalence F G) :
       rw [F.map_comp, F.map_comp, map_η_inv_eq_ε e Y]
       exact (toUnits e).flat_sharp_id⟩⟩
 
-/-! ### 方向 (1) → (2) -/
+-- ─── 方向 (1) → (2) ─────────────────────────────────────────────────────────
 
 /-- 修正的餘單位自然變換：ε'·A = ρ·A ○ F[η⁻¹·G[A]] ○ ρ⁻¹·F[G[A]] -/
 private def ofCatEquiv_ε'_nat (e : CatEquiv C D) : e.F ○[Cat] e.G ⇒ 𝟙[Cat] D where
@@ -219,7 +219,7 @@ def ofCatEquiv (e : CatEquiv C D) :
       ext A
       simpa using (ofCatEquiv_right_tri e A).symm}
 
-/-! ### 方向 (3) → (2) -/
+-- ─── 方向 (3) → (2) ─────────────────────────────────────────────────────────
 
 section OfFullyFaithful
 

@@ -99,7 +99,7 @@
 
 | 定理 | 說明 |
 |---|---|
-| `Δ ⊣ lim` | Complete category 中，`Δ` 和 `lim` 構成 adjunction |
+| `Δ ⊣ lim` | Complete category 中，`Δ ⊣ lim` 和 Limit 間的轉換 |
 
 **依賴**：Phase 1.2（RAPL）+ `Limits/Complete.lean`
 **工作量**：中

@@ -16,12 +16,14 @@ Indexed product / coproduct：discrete 圖的 limit / colimit。
 ### `Product`
 - `.data` — `Product` ⟹ `ProductData`
 - `.unique` — product 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ B → Product f → Product f`（改 product object）
 - `ShapeComplete.Product` — `ShapeComplete` ⟹ `Product`
 ### `ProductData`
 - `.toProduct` — `ProductData` ⟹ `Product`
 ### `CoProduct`
 - `.data` — `CoProduct` ⟹ `CoProductData`
 - `.unique` — coproduct 在 iso 下唯一
+- `.ofObjIso` — `obj ≅ B → CoProduct f → CoProduct f`（改 coproduct object）
 - `ShapeCoComplete.CoProduct` — `ShapeCoComplete` ⟹ `CoProduct`
 ### `CoProductData`
 - `.toCoProduct` — `CoProductData` ⟹ `CoProduct`
@@ -73,6 +75,11 @@ noncomputable def data [h : Product f] : ProductData f :=
 noncomputable def unique (h₁ h₂ : Product f) : h₁.obj ≅ h₂.obj :=
   Limit.unique h₁.toLimit h₂.toLimit
 
+/-- 沿 product object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : Product f) (iso : h.obj ≅ B) : Product f :=
+  { toLimit := h.toLimit.ofObjIso iso }
+
 instance (priority := 100) ShapeComplete.Product
     [h : ShapeComplete (DiscreteCat α) C] : Product f where
   obj := (h.hasLimit (discreteFunctor f)).obj
@@ -114,6 +121,11 @@ noncomputable def data [h : CoProduct f] : CoProductData f :=
 /-- Coproduct 在 isomorphism 下唯一 -/
 noncomputable def unique (h₁ h₂ : CoProduct f) : h₁.obj ≅ h₂.obj :=
   CoLimit.unique h₁.toCoLimit h₂.toCoLimit
+
+/-- 沿 coproduct object 的 isomorphism 轉移 -/
+@[reducible]
+def ofObjIso (h : CoProduct f) (iso : h.obj ≅ B) : CoProduct f :=
+  { toCoLimit := h.toCoLimit.ofObjIso iso }
 
 instance (priority := 100) ShapeCoComplete.CoProduct
     [h : ShapeCoComplete (DiscreteCat α) C] : CoProduct f where

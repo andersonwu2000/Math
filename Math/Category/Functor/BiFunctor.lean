@@ -3,7 +3,10 @@ import MATH.Category.Structure.ProductCat
 /-!
 # Functor/BiFunctor.lean
 
-Bifunctor 操作。
+Bifunctor 操作與記號。
+
+記號：`F[X, –]` / `F[–, Y]`（固定一側）、`F[f, –]` / `F[–, f]`（NatTrans）、
+`F[G–, –]` / `F[–, G–]` / `F[G–, H–]`（合成）、`α·(X, –)` / `α(X, –)`（固定分量）。
 
 ## 定義
 - `.fix_left` / `.fix_right` — 固定一側 `F[X, –]`、`F[–, Y]`
@@ -14,19 +17,6 @@ Bifunctor 操作。
 ## 定理
 ### `BiFunctor`
 - `.interchange` / `.interchange'` — `F[𝟙, g] ○ F[f, 𝟙] = F[f, g]`
-
-## 記號
-| 記號 | 意義 |
-|---|---|
-| `F[X, Y]` / `F[f, g]` | bifunctor 作用於物件 / 態射 |
-| `F[X, –]` / `F[–, Y]` | 固定一側 |
-| `F[f, X]` / `F[X, f]` | 固定一側的態射 |
-| `F[f, –]` / `F[–, f]` | 固定一側的 natural transformation |
-| `F[G–, –]` / `F[–, G–]` / `F[G–, H–]` | 與 functor 合成 |
-| `F[G–, Y]` / `F[X, G–]` | 合成後固定 |
-| `F[G–, f]` / `F[f, G–]` | 合成後固定一側的 natural transformation |
-| `α·(X, –)` / `α·(–, X)` | natural transformation 固定一側 |
-| `α(X, –)` / `α(–, X)` | natural isomorphism 固定一側 |
 -/
 
 namespace CategoryTheory
@@ -134,7 +124,7 @@ abbrev NatTrans_fix_right (Y : D.obj) :
 notation:max α "·" "(" "–" ", " X ")" => NatTrans_fix_right α X
 notation:max α "·" "(" X ", " "–)" => NatTrans_fix_left α X
 
-/-! ### Interchange Law -/
+-- ─── Interchange Law ─────────────────────────────────────────────────────────
 
 /-- `F[𝟙, g] ○ F[f, 𝟙] = F[f, g]` -/
 @[simp, grind =]

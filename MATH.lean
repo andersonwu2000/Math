@@ -27,6 +27,10 @@ import MATH.Category.Limits.Shapes.Product
 import MATH.Category.Limits.Shapes.Pullback
 import MATH.Category.Limits.Shapes.BinaryProduct
 import MATH.Category.Limits.Shapes.Zero
+import MATH.Category.Limits.Instances.Types
+import MATH.Category.Limits.Instances.Cat
+import MATH.Category.Limits.Instances.ProductCat
+import MATH.Category.Limits.Instances.FunctorCat
 import MATH.Category.Functor.Representable
 import MATH.Category.UniversalProperty
 import MATH.Category.Yoneda

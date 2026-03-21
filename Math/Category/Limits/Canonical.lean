@@ -4,6 +4,7 @@ import MATH.Category.Limits.Basic
 # Limits/Canonical.lean
 
 Canonical limit：cones / cocones 作為 Hom 函子的 limit。
+直接構造 `rep : Hom[Δᵒᵖ–, F] ≅ Hom[–, obj]` 的 NatIso。
 
 ## 定理
 ### `Limit`
@@ -18,24 +19,24 @@ namespace CategoryTheory
 
 namespace Limit
 
-variable (F : J ⥤ C) (X : C.obj)
+variable (F : J ⥤ C) (X : C.obj) (A : Types.obj)
 
-/-- Canonical cone：`Hom[Δᵒᵖ[X], F] → Hom[X, F[j]]` 由 `φ ↦ φ·j` 給出 -/
-def Canonical.cone : Δ[Hom[Δᵒᵖ[X], F]] ⇒ Hom[X, F–] where
-  app j φ := φ·j
-  naturality f := by ext α; simpa using α.naturality f
+private def forward (φ : Δᵒᵖ[A] ⇒ Hom[X, F–]) : A → Hom[Δᵒᵖ[X], F] :=
+  fun a => {
+    app j := φ·j a
+    naturality f := by simpa using congrFun (φ.naturality f) a }
+
+private def backward (g : A → Hom[Δᵒᵖ[X], F]) : Δᵒᵖ[A] ⇒ Hom[X, F–] :=
+  { app j a := (g a)·j
+    naturality f := by ext a; simpa using (g a).naturality f }
 
 /-- `Cone(X, F) = Δ[X] ⇒ F` 是 `Hom[X, F–] : J ⥤ Types` 的 limit -/
-instance Canonical.Limit : Limit (Hom[X, F–]) :=
-  ({ obj  := Hom[Δᵒᵖ[X], F]
-     cone := Canonical.cone F X
-     lift := fun {A} (φ : Δ[A] ⇒ Hom[X, F–]) (a : A) => {
-       app j := φ·j a
-       naturality f := by simpa using congrFun (φ.naturality f) a }
-     lift_π     := by aesop_cat
-     lift_unique := fun φ k hk => funext fun a =>
-       NatTrans.ext (funext fun j => congrFun (hk j) a)
-   } : LimitData (Hom[X, F–])).toLimit
+instance Canonical.Limit : Limit (Hom[X, F–]) where
+  obj := Hom[Δᵒᵖ[X], F]
+  rep := {
+    hom := { app A := forward F X A }
+    inv := { app A := backward F X A }
+  }
 
 end Limit
 
@@ -43,24 +44,23 @@ end Limit
 
 namespace CoLimit
 
-variable (F : J ⥤ C) (X : C.obj)
+variable (F : J ⥤ C) (X : C.obj) (A : Types.obj)
 
-/-- Canonical cone：`Hom[F, Δ[X]] → Hom[F[j], X]` 由 `φ ↦ φ·j` 給出 -/
-def Canonical.cone : Δ[Hom[F, Δ[X]]] ⇒ Hom[Fᵒᵖ–, X] where
-  app j (φ : F ⇒ Δ[X]) := φ·j
-  naturality f := by ext φ; simp
+private def forward (φ : Δᵒᵖ[A] ⇒ Hom[Fᵒᵖ–, X]) : A → Hom[F, Δ[X]] :=
+  fun a => {
+    app j := φ·j a
+    naturality f := by simpa using (congrFun (φ.naturality f) a).symm }
+
+private def backward (g : A → Hom[F, Δ[X]]) : Δᵒᵖ[A] ⇒ Hom[Fᵒᵖ–, X] :=
+  { app j a := (g a)·j }
 
 /-- `Cocone(F, X) = F ⇒ Δ[X]` 是 `Hom[Fᵒᵖ–, X] : Jᵒᵖ ⥤ Types` 的 limit -/
-instance Canonical.Limit : Limit (Hom[Fᵒᵖ–, X] : Jᵒᵖ ⥤ Types) :=
-  ({ obj  := F ⇒ Δ[X]
-     cone := Canonical.cone F X
-     lift := fun {A} (φ : Δ[A] ⇒ Hom[Fᵒᵖ–, X]) (a : A) => {
-       app j := φ·j a
-       naturality f := by simpa using (congrFun (φ.naturality f) a).symm }
-     lift_π     := by aesop_cat
-     lift_unique := fun φ k hk => funext fun a =>
-       NatTrans.ext (funext fun j => congrFun (hk j) a)
-   } : @LimitData (Jᵒᵖ) Types Hom[Fᵒᵖ–, X]).toLimit
+instance Canonical.Limit : Limit (Hom[Fᵒᵖ–, X] : Jᵒᵖ ⥤ Types) where
+  obj := F ⇒ Δ[X]
+  rep := {
+    hom := { app A := forward F X A }
+    inv := { app A := backward F X A }
+  }
 
 end CoLimit
 

@@ -10,6 +10,7 @@ Functor 保持與反射 morphism 性質。
 - `.IsSplitMono` / `.IsSplitEpi` / `.IsIso` — functor 保持 split mono/epi、iso
 - `.Iso` — `X ≅ Y → F[X] ≅ F[Y]`
 - `.NatIso` — `G ≅ H → F ○ G ≅ F ○ H`
+- `.NatIso'` — `G ≅ H → G ○ F ≅ H ○ F`
 ### `Reflect`
 - `.IsMono` / `.IsEpi` — faithful functor 反射 mono/epi
 - `.IsSplitMono` / `.IsSplitEpi` / `.IsIso` — fully faithful 反射
@@ -52,11 +53,19 @@ lemma Iso.inv (i : X ≅ Y) :
   (Iso F i).inv = F[i.inv] := rfl
 
 /-- `G ≅ H → F ○ G ≅ F ○ H` -/
-def NatIso (α : G ≅[⟦B, C⟧] H) : F ○[Cat] G ≅[⟦B, D⟧] F ○[Cat] H where
+def NatIso {G H : B ⥤ C} (α : G ≅ H) : F ○[Cat] G ≅ F ○[Cat] H where
   hom := { app b := F[α.hom·b], naturality f := NatTrans.functor_naturality F α.hom f }
   inv := { app b := F[α.inv·b], naturality f := NatTrans.functor_naturality F α.inv f }
   hom_inv_id := by ext b; simp [← Functor.map_comp]
   inv_hom_id := by ext b; simp [← Functor.map_comp]
+
+/-- `G ≅ H → G ○ F ≅ H ○ F` -/
+def NatIso' {E : Category} {G H : D ⥤ E} (α : G ≅ H) :
+    G ○[Cat] F ≅ H ○[Cat] F where
+  hom := { app b := α.hom·F[b] }
+  inv := { app b := α.inv·F[b] }
+  hom_inv_id := by ext b; simp
+  inv_hom_id := by ext b; simp
 
 end Preserve
 
@@ -104,7 +113,7 @@ def Iso [F.FullyFaithful] (i : F[X] ≅ F[Y]) : X ≅ Y where
 
 /-- `F ○ G ≅ F ○ H → G ≅ H`（fully faithful） -/
 noncomputable
-def NatIso [F.FullyFaithful] (α : F ○[Cat] G ≅[⟦B, D⟧] F ○[Cat] H) : G ≅[⟦B, C⟧] H where
+def NatIso {G H : B ⥤ C} [F.FullyFaithful] (α : F ○[Cat] G ≅ F ○[Cat] H) : G ≅ H where
   hom := { app b := F.preimage (α.hom·b),
             naturality f := F.map_injective (by
               simp only [Functor.map_comp, F.map_preimage_id]
